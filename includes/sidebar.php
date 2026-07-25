@@ -12,11 +12,10 @@ function filterWatches(mysqli $conn, array $filters): array
     // Include all retailer records when requested; otherwise only join retailers that currently have the watch in stock
     $joinCondition = $includeOutOfStock ? "wr.watch_id = w.id" : "wr.watch_id = w.id AND wr.is_available = 1";
 
-    // DISTINCT prevents duplicate watch IDs when a watch is sold by multiple retailers matching the selected filters.
-
+    // DISTINCT prevents duplicate watch IDs when a watch is sold by multiple retailers matching the selected filters
     $sql = "SELECT DISTINCT w.id
                 FROM watches w
-                LEFT JOIN watch_retailers wr
+                LEFT JOIN watch_variants wr
                 ON $joinCondition
                 WHERE w.is_active = 1";
 
@@ -30,7 +29,6 @@ function filterWatches(mysqli $conn, array $filters): array
 
     // Gender
     if (!empty($filters['gender']) && is_array($filters['gender'])) {
-
         $genders = array_map(
             fn($gender) => strtolower(trim($gender)),
             $filters['gender']
@@ -65,7 +63,6 @@ function filterWatches(mysqli $conn, array $filters): array
 
     // Retailer
     if (!empty($filters['retailer']) && is_array($filters['retailer'])) {
-
         $placeholders = implode(',', array_fill(0, count($filters['retailer']), '?'));
 
         $sql .= " AND LOWER(wr.retailer_name) IN ($placeholders)";
@@ -126,7 +123,7 @@ while ($row = $brandResult->fetch_assoc()) {
 }
 
 // Fetch all retailers
-$retailerQuery = "SELECT DISTINCT retailer_name FROM watch_retailers ORDER BY retailer_name ASC";
+$retailerQuery = "SELECT DISTINCT retailer_name FROM watch_variants ORDER BY retailer_name ASC";
 
 $retailerResult = $conn->query($retailerQuery);
 $retailers = [];
@@ -147,18 +144,15 @@ while ($row = $retailerResult->fetch_assoc()) {
                 <h3>Gender</h3>
 
                 <label>
-                    <input type="checkbox" name="gender[]" value="men" <?= in_array('men', $selectedGenders, true) ? 'checked' : '' ?>>
-                    Men
+                    <input type="checkbox" name="gender[]" value="men" <?= in_array('men', $selectedGenders, true) ? 'checked' : '' ?>>Men
                 </label>
 
                 <label>
-                    <input type="checkbox" name="gender[]" value="women" <?= in_array('women', $selectedGenders, true) ? 'checked' : '' ?>>
-                    Women
+                    <input type="checkbox" name="gender[]" value="women" <?= in_array('women', $selectedGenders, true) ? 'checked' : '' ?>>Women
                 </label>
 
                 <label>
-                    <input type="checkbox" name="gender[]" value="unisex" <?= in_array('unisex', $selectedGenders, true) ? 'checked' : '' ?>>
-                    Unisex
+                    <input type="checkbox" name="gender[]" value="unisex" <?= in_array('unisex', $selectedGenders, true) ? 'checked' : '' ?>>Unisex
                 </label>
             </div>
 
@@ -184,7 +178,6 @@ while ($row = $retailerResult->fetch_assoc()) {
                     <label>
                         <input type="checkbox" name="retailer[]" value="<?= htmlspecialchars($retailer['retailer_name']) ?>"
                             <?= in_array($retailer['retailer_name'], $selectedRetailers, true) ? 'checked' : '' ?>>
-
                         <?= htmlspecialchars($retailer['retailer_name']) ?>
                     </label>
 
@@ -196,33 +189,27 @@ while ($row = $retailerResult->fetch_assoc()) {
                 <h3>Movement</h3>
 
                 <label>
-                    <input type="checkbox" name="movement[]" value="quartz" <?= in_array('quartz', $selectedMovement, true) ? 'checked' : '' ?>>
-                    Quartz
+                    <input type="checkbox" name="movement[]" value="quartz" <?= in_array('quartz', $selectedMovement, true) ? 'checked' : '' ?>>Quartz
                 </label>
 
                 <label>
-                    <input type="checkbox" name="movement[]" value="automatic" <?= in_array('automatic', $selectedMovement, true) ? 'checked' : '' ?>>
-                    Automatic
+                    <input type="checkbox" name="movement[]" value="automatic" <?= in_array('automatic', $selectedMovement, true) ? 'checked' : '' ?>>Automatic
                 </label>
 
                 <label>
-                    <input type="checkbox" name="movement[]" value="mechanical" <?= in_array('mechanical', $selectedMovement, true) ? 'checked' : '' ?>>
-                    Mechanical
+                    <input type="checkbox" name="movement[]" value="mechanical" <?= in_array('mechanical', $selectedMovement, true) ? 'checked' : '' ?>>Mechanical
                 </label>
 
                 <label>
-                    <input type="checkbox" name="movement[]" value="manual" <?= in_array('manual', $selectedMovement, true) ? 'checked' : '' ?>>
-                    Manual
+                    <input type="checkbox" name="movement[]" value="manual" <?= in_array('manual', $selectedMovement, true) ? 'checked' : '' ?>>Manual
                 </label>
 
                 <label>
-                    <input type="checkbox" name="movement[]" value="solar" <?= in_array('solar', $selectedMovement, true) ? 'checked' : '' ?>>
-                    Solar
+                    <input type="checkbox" name="movement[]" value="solar" <?= in_array('solar', $selectedMovement, true) ? 'checked' : '' ?>>Solar
                 </label>
 
                 <label>
-                    <input type="checkbox" name="movement[]" value="kinetic" <?= in_array('kinetic', $selectedMovement, true) ? 'checked' : '' ?>>
-                    Kinetic
+                    <input type="checkbox" name="movement[]" value="kinetic" <?= in_array('kinetic', $selectedMovement, true) ? 'checked' : '' ?>>Kinetic
                 </label>
             </div>
 
@@ -231,17 +218,14 @@ while ($row = $retailerResult->fetch_assoc()) {
                 <h3>Availability</h3>
 
                 <label>
-                    <input type="checkbox" name="include_out_of_stock" value="1" <?= isset($_GET['include_out_of_stock']) ? 'checked' : '' ?>>
-                    Include Out of Stock Products
+                    <input type="checkbox" name="include_out_of_stock" value="1" <?= isset($_GET['include_out_of_stock']) ? 'checked' : '' ?>>Include Out of Stock Products
                 </label>
             </div>
 
             <!-- Maximum Price -->
             <div class="filter-group">
                 <h3>Maximum Price</h3>
-
-                <input type="number" name="max_price" min="0" placeholder="₹ 5000"
-                    value="<?= htmlspecialchars($_GET['max_price'] ?? '') ?>">
+                <input type="number" name="max_price" min="0" placeholder="₹ 5000" value="<?= htmlspecialchars($_GET['max_price'] ?? '') ?>">
             </div>
 
             <!-- Buttons -->

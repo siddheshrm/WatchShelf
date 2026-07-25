@@ -1,6 +1,30 @@
 <?php
 require_once '../../includes/auth.php';
 require_once '../../config/connection.php';
+require_once '../../config/app.php';
+
+function deleteDirectory($dir)
+{
+    if (!is_dir($dir)) {
+        return;
+    }
+
+    foreach (scandir($dir) as $item) {
+        if ($item === '.' || $item === '..') {
+            continue;
+        }
+
+        $path = $dir . DIRECTORY_SEPARATOR . $item;
+
+        if (is_dir($path)) {
+            deleteDirectory($path);
+        } else {
+            unlink($path);
+        }
+    }
+
+    rmdir($dir);
+}
 
 if (!isset($_GET['id']) || !is_numeric($_GET['id'])) {
     header("Location: list.php");
@@ -10,7 +34,7 @@ if (!isset($_GET['id']) || !is_numeric($_GET['id'])) {
 $watchId = (int) $_GET['id'];
 
 // Get image folder
-$stmt = $conn->prepare("SELECT image_folder FROM watches WHERE id = ?");
+$stmt = $conn->prepare("SELECT brand, model_name FROM watches WHERE id = ?");
 if (!$stmt) {
     die($conn->error);
 }
@@ -26,7 +50,12 @@ if ($result->num_rows !== 1) {
 }
 
 $watch = $result->fetch_assoc();
-$imageFolder = WATCH_IMAGE_DIR . '/' . $watch['image_folder'];
+
+$watchFolder = strtolower($watch['brand'] . '-' . $watch['model_name']);
+$watchFolder = preg_replace('/[^a-z0-9]+/', '-', $watchFolder);
+$watchFolder = trim($watchFolder, '-');
+
+$imageFolder = WATCH_IMAGE_DIR . '/' . $watchFolder;
 
 $stmt->close();
 
@@ -40,15 +69,7 @@ if (!$stmt) {
 $stmt->bind_param("i", $watchId);
 
 if ($stmt->execute()) {
-    // Delete image folder if it exists
-    if (is_dir($imageFolder)) {
-
-        foreach (glob($imageFolder . "/*") as $file) {
-            unlink($file);
-        }
-
-        rmdir($imageFolder);
-    }
+    deleteDirectory($imageFolder);
 }
 
 $stmt->close();

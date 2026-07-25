@@ -3,18 +3,17 @@ require_once '../../includes/auth.php';
 require_once '../../config/connection.php';
 require_once '../../config/app.php';
 
-/* Fetch all watches along with their associated retailers.
-Retailer details are combined into a single string using GROUP_CONCAT,
-allowing each watch to be displayed as a single row in the listing. */
+/* Fetch all watches with aggregated variant information.
+   - Retrieves the default variant's image folder and color.
+   - Counts the number of color options and retailer records.
+   - Aggregates retailer details with GROUP_CONCAT so each watch is returned as a single row. */
 
-$sql = "SELECT w.*, GROUP_CONCAT(CONCAT(r.retailer_name, '|', COALESCE(r.base_url, ''), '|', COALESCE(r.affiliate_url, ''))
-            ORDER BY r.display_order SEPARATOR '~~')
-            AS retailers
+$sql = "SELECT w.*, MAX(CASE WHEN wv.is_default = 1 THEN wv.image_folder END) AS default_image_folder, COALESCE (MAX(CASE WHEN wv.is_default = 1 THEN wv.color_name END), 'Not Available') AS default_color, COUNT(DISTINCT wv.color_name) AS total_colors, COUNT(wv.id) AS total_retailers, GROUP_CONCAT(CONCAT(wv.retailer_name, '|', COALESCE(wv.base_url, ''), '|', COALESCE(wv.affiliate_url, '')) ORDER BY wv.display_order SEPARATOR '~~') AS retailers
             FROM watches w
-            LEFT JOIN watch_retailers r
-            ON w.id = r.watch_id
+            LEFT JOIN watch_variants wv
+            ON w.id = wv.watch_id
             GROUP BY w.id
-            ORDER BY w.brand, w.model_name;";
+            ORDER BY w.brand, w.model_name";
 
 $result = $conn->query($sql);
 if (!$result) {
@@ -52,13 +51,13 @@ $totalWatches = $result ? $result->num_rows : 0;
         <tr>
             <th>#</th>
             <th>Image</th>
-            <th>Brand & Model</th>
+            <th>Watch</th>
             <th>MRP</th>
             <th>Gender</th>
-            <th>Featured</th>
-            <th>Active</th>
-            <th>Base URL</th>
-            <th>Affiliated URL</th>
+            <th>Available Colors</th>
+            <th>Retailer Records</th>
+            <th>Featured?</th>
+            <th>Active?</th>
             <th>Actions</th>
         </tr>
 
@@ -72,8 +71,8 @@ $totalWatches = $result ? $result->num_rows : 0;
 
                     <!-- Image -->
                     <?php
-                    $imageFile = WATCH_IMAGE_DIR . '/' . $watch['image_folder'] . '/1.webp';
-                    $imageUrl = WATCH_IMAGE_URL . '/' . $watch['image_folder'] . '/1.webp';
+                    $imageFile = WATCH_IMAGE_DIR . '/' . $watch['default_image_folder'] . '/1.webp';
+                    $imageUrl = WATCH_IMAGE_URL . '/' . $watch['default_image_folder'] . '/1.webp';
                     ?>
 
                     <td>
@@ -97,62 +96,24 @@ $totalWatches = $result ? $result->num_rows : 0;
                     <!-- Gender -->
                     <td><?= ucfirst($watch['gender']); ?></td>
 
+                    <!-- Colors Variants -->
+                    <td>
+                        <?= htmlspecialchars($watch['default_color']) ?>
+
+                        <?php if ($watch['total_colors'] > 1): ?>
+                            <small>+<?= $watch['total_colors'] - 1 ?> more</small>
+                        <?php endif; ?>
+                    </td>
+
+                    <!-- Retailer Records -->
+                    <td>
+                        <?= $watch['total_retailers']; ?>
+                        <?= $watch['total_retailers'] == 1 ? 'Retailer' : 'Retailers'; ?>
+                    </td>
+
                     <!-- Featured and Active status are displayed as 'Yes' or 'No' based on their boolean values -->
                     <td><?= $watch['is_featured'] ? 'Yes' : 'No'; ?></td>
                     <td><?= $watch['is_active'] ? 'Yes' : 'No'; ?></td>
-
-                    <!-- Base URL -->
-                    <td>
-                        <?php
-                        if (!empty($watch['retailers'])) {
-                            $retailers = explode('~~', $watch['retailers']);
-
-                            foreach ($retailers as $retailer) {
-                                $data = explode('|', $retailer);
-
-                                $name = $data[0];
-                                $baseUrl = $data[1];
-                                $affiliateUrl = $data[2];
-
-                                if (!empty($baseUrl)) {
-                                    echo '<a href="' . htmlspecialchars($baseUrl) . '" target="_blank" rel="noopener noreferrer">' . htmlspecialchars($name) . '</a>';
-                                } else {
-                                    echo htmlspecialchars($name);
-                                }
-
-                                echo '<br>';
-                            }
-                        } else {
-                            echo "0";
-                        } ?>
-                    </td>
-
-                    <!-- Affiliate URL -->
-                    <td>
-                        <?php
-                        if (!empty($watch['retailers'])) {
-                            $retailers = explode('~~', $watch['retailers']);
-
-                            foreach ($retailers as $retailer) {
-                                $data = explode('|', $retailer);
-
-                                $name = $data[0];
-                                $baseUrl = $data[1];
-                                $affiliateUrl = $data[2];
-
-                                if (!empty($affiliateUrl)) {
-                                    echo '<a href="' . htmlspecialchars($affiliateUrl) . '" target="_blank" rel="noopener noreferrer">' . htmlspecialchars($name) . '</a>';
-                                } else {
-                                    echo htmlspecialchars($name);
-                                }
-
-                                echo '<br>';
-                            }
-                        } else {
-                            echo "0";
-                        }
-                        ?>
-                    </td>
 
                     <!-- Actions -->
                     <td>
@@ -164,9 +125,7 @@ $totalWatches = $result ? $result->num_rows : 0;
             <?php endwhile; ?>
         <?php else: ?>
             <tr>
-                <td colspan="10">
-                    No watches found.
-                </td>
+                <td colspan="10">No watches found.</td>
             </tr>
         <?php endif; ?>
 

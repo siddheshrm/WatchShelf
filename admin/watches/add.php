@@ -2,6 +2,7 @@
 require_once '../../includes/auth.php';
 require_once '../../config/connection.php';
 require_once '../../config/app.php';
+$COLOR_MAP = require_once '../../config/colormap.php';
 
 $message = '';
 
@@ -12,7 +13,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $modelName = trim($_POST['model_name']);
     $mrp = $_POST['mrp'];
     $gender = $_POST['gender'];
-    $available_colors = trim($_POST['available_colors']);
 
     $caseMaterial = trim($_POST['case_material']);
     $caseDiameter = !empty($_POST['case_diameter_mm']) ? $_POST['case_diameter_mm'] : null;
@@ -28,13 +28,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $ownerStatus = $_POST['owner_status'];
     $isActive = isset($_POST['is_active']) ? 1 : 0;
 
-    $imageFolder = strtolower($brand . '-' . $modelName);
-    $imageFolder = preg_replace('/[^a-z0-9]+/', '-', $imageFolder);
-    $imageFolder = trim($imageFolder, '-');
-
     if (empty($message)) {
-        $sql = "INSERT INTO watches (admin_id, brand, model_name, mrp, gender, available_colors, case_material, case_diameter_mm, band_material, movement_type, water_resistance_atm, display_type, crystal_type, tags, warranty_years, image_folder, is_featured, owner_status, is_active)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        $sql = "INSERT INTO watches (admin_id, brand, model_name, mrp, gender, case_material, case_diameter_mm, band_material, movement_type, water_resistance_atm, display_type, crystal_type, tags, warranty_years, is_featured, owner_status, is_active)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
         $stmt = $conn->prepare($sql);
         // Check if the preparation was successful
@@ -42,51 +38,82 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             die($conn->error);
         }
 
-        $stmt->bind_param("ississsdssisssisisi", $adminId, $brand, $modelName, $mrp, $gender, $available_colors, $caseMaterial, $caseDiameter, $bandMaterial, $movementType, $waterResistance, $displayType, $crystalType, $tags, $warrantyYears, $imageFolder, $isFeatured, $ownerStatus, $isActive);
+        $stmt->bind_param("ississdssisssiisi", $adminId, $brand, $modelName, $mrp, $gender, $caseMaterial, $caseDiameter, $bandMaterial, $movementType, $waterResistance, $displayType, $crystalType, $tags, $warrantyYears, $isFeatured, $ownerStatus, $isActive);
 
         if ($stmt->execute()) {
             $watchId = $conn->insert_id;
 
-            // Create the watch image folder if it doesn't already exist
-            $imagePath = WATCH_IMAGE_DIR . '/' . $imageFolder;
-
-            if (!is_dir($imagePath) && !mkdir($imagePath, 0755, true)) {
-                error_log("Failed to create image folder: " . $imagePath);
-            }
-
-            $retailerSql = "INSERT INTO watch_retailers (watch_id, retailer_name, retailer_type, base_url, affiliate_url, price, currency, is_available, display_order)
-                                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+            $retailerSql = "INSERT INTO watch_variants (watch_id, color_name, image_folder, is_default, retailer_name, retailer_type, base_url, affiliate_url, price, currency, is_available)
+                                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
             $retailerStmt = $conn->prepare($retailerSql);
-            // Check if the preparation was successful
+
             if (!$retailerStmt) {
                 die($conn->error);
             }
 
-            foreach ($_POST['retailer_name'] as $i => $retailerName) {
-                $retailerName = trim($retailerName);
+            // Get the index of the selected default color (-1 if none selected)
+            $defaultColor = isset($_POST['default_color']) ? (int) $_POST['default_color'] : -1;
 
-                // Skip empty retailer blocks
-                if ($retailerName === '') {
+            foreach ($_POST['colors'] as $colorIndex => $color) {
+                $colorName = trim($color['color_name']);
+
+                // Skip empty color blocks
+                if ($colorName === '') {
                     continue;
                 }
 
-                $retailerType = $_POST['retailer_type'][$i];
-                $baseUrl = trim($_POST['base_url'][$i]);
-                $affiliateUrl = trim($_POST['affiliate_url'][$i]);
+                $isDefault = ($colorIndex == $defaultColor) ? 1 : 0;
 
-                $price = $_POST['price'][$i] !== '' ? $_POST['price'][$i] : null;
+                // Generate parent watch folder
+                $watchFolder = strtolower($brand . '-' . $modelName);
+                $watchFolder = preg_replace('/[^a-z0-9]+/', '-', $watchFolder);
+                $watchFolder = trim($watchFolder, '-');
 
-                $currency = trim($_POST['currency'][$i]);
-                $isAvailable = $_POST['is_available'][$i];
-                $displayOrder = $_POST['display_order'][$i];
+                $watchFolderPath = WATCH_IMAGE_DIR . '/' . $watchFolder;
 
-                $retailerStmt->bind_param("issssdsii", $watchId, $retailerName, $retailerType, $baseUrl, $affiliateUrl, $price, $currency, $isAvailable, $displayOrder);
+                if (!is_dir($watchFolderPath)) {
+                    mkdir($watchFolderPath, 0755, true);
+                }
 
-                $retailerStmt->execute();
+                // Generate color folder
+                $colorFolder = strtolower($colorName);
+                $colorFolder = preg_replace('/[^a-z0-9]+/', '-', $colorFolder);
+                $colorFolder = trim($colorFolder, '-');
+
+                $imageFolder = $watchFolder . '/' . $colorFolder;
+
+                $imagePath = WATCH_IMAGE_DIR . '/' . $imageFolder;
+
+                if (!is_dir($imagePath)) {
+                    mkdir($imagePath, 0755, true);
+                }
+
+                // Insert retailers
+                foreach ($color['retailers'] as $retailer) {
+                    $retailerName = trim($retailer['retailer_name']);
+
+                    if ($retailerName === '') {
+                        continue;
+                    }
+
+                    $retailerType = $retailer['retailer_type'];
+                    $baseUrl = trim($retailer['base_url']);
+                    $affiliateUrl = trim($retailer['affiliate_url']);
+
+                    $price = ($retailer['price'] !== '') ? $retailer['price'] : null;
+
+                    $currency = trim($retailer['currency']);
+                    $isAvailable = $retailer['is_available'];
+
+                    $retailerStmt->bind_param("ississssdsi", $watchId, $colorName, $imageFolder, $isDefault, $retailerName, $retailerType, $baseUrl, $affiliateUrl, $price, $currency, $isAvailable);
+
+                    $retailerStmt->execute();
+                }
             }
 
             $retailerStmt->close();
+
             header("Location: ../dashboard.php");
             // $message = "Watch added successfully.";
             exit();
@@ -151,13 +178,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </p>
 
             <p>
-                <label for="available_colors">Available Colors</label><br>
-                <input type="text" id="available_colors" name="available_colors" placeholder="Enter colors separated by commas">
-            </p>
-
-            <p>
-                <label>
-                    <input type="checkbox" name="is_featured" value="1">Featured Watch</label>
+                <label><input type="checkbox" name="is_featured" value="1">Featured Watch</label>
             </p>
 
             <p>
@@ -170,8 +191,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </p>
 
             <p>
-                <label>
-                    <input type="checkbox" name="is_active" value="1" checked>Active</label>
+                <label><input type="checkbox" name="is_active" value="1" checked>Active</label>
             </p>
         </fieldset>
 
@@ -241,68 +261,109 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         <br>
 
-        <h2>Retailers</h2>
+        <h2>Color Options</h2>
 
-        <table cellpadding="10">
-            <tr>
-                <?php for ($i = 1; $i <= 5; $i++): ?>
-                    <td valign="top">
-                        <fieldset>
-                            <legend>Retailer <?= $i; ?></legend>
+        <div id="colorsContainer">
+            <p><button type="button" id="addColorBtn">+ Add Color</button></p>
 
-                            <p>
-                                <label>Retailer Name</label><br>
-                                <input type="text" name="retailer_name[]">
-                            </p>
+            <template id="colorTemplate">
+                <details open class="color-block">
+                    <summary>
+                        <strong>New Color</strong>
+                    </summary>
 
-                            <p>
-                                <label>Retailer Type</label><br>
-                                <select name="retailer_type[]">
-                                    <option value="ecommerce" selected>E-commerce</option>
-                                    <option value="brand_website">Brand Website</option>
-                                    <option value="offline">Offline</option>
-                                </select>
-                            </p>
+                    <br>
 
-                            <p>
-                                <label>Base URL</label><br>
-                                <input type="url" name="base_url[]">
-                            </p>
+                    <p>
+                        <label>Color</label><br>
+                        <select class="color-select">
+                            <option value="">Select Color</option>
 
-                            <p>
-                                <label>Affiliate URL</label><br>
-                                <input type="url" name="affiliate_url[]">
-                            </p>
+                            <?php foreach (array_keys($COLOR_MAP) as $colorName): ?>
+                                <option value="<?= htmlspecialchars($colorName); ?>">
+                                    <?= htmlspecialchars($colorName); ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                    </p>
 
-                            <p>
-                                <label>Price</label><br>
-                                <input type="number" step="0.01" name="price[]">
-                            </p>
+                    <p>
+                        <label>
+                            <input type="radio" name="default_color" class="default-color">Is Default Color?
+                        </label>
+                    </p>
 
-                            <p>
-                                <label>Currency</label><br>
-                                <input type="text" name="currency[]" value="INR" readonly>
-                            </p>
+                    <table cellpadding="10">
+                        <tr>
 
-                            <p>
-                                <label>Available</label><br>
-                                <select name="is_available[]">
-                                    <option value="1" selected>Yes</option>
-                                    <option value="0">No</option>
-                                </select>
-                            </p>
+                            <?php for ($i = 1; $i <= 5; $i++): ?>
+                                <td valign="top">
 
-                            <input type="hidden" name="display_order[]" value="<?= $i; ?>">
-                        </fieldset>
-                    </td>
-                <?php endfor; ?>
-            </tr>
-        </table>
+                                    <fieldset class="retailer-block">
+                                        <legend>Retailer <?= $i; ?></legend>
+
+                                        <p>
+                                            <label>Retailer Name</label><br>
+                                            <input type="text" class="retailer-name">
+                                        </p>
+
+                                        <p>
+                                            <label>Retailer Type</label><br>
+                                            <select class="retailer-type">
+                                                <option value="ecommerce" selected>E-commerce</option>
+                                                <option value="brand_website">Brand Website</option>
+                                                <option value="offline">Offline</option>
+                                            </select>
+                                        </p>
+
+                                        <p>
+                                            <label>Base URL</label><br>
+                                            <input type="url" class="base-url">
+                                        </p>
+
+                                        <p>
+                                            <label>Affiliate URL</label><br>
+                                            <input type="url" class="affiliate-url">
+                                        </p>
+
+                                        <p>
+                                            <label>Price</label><br>
+                                            <input type="number" step="0.01" class="price">
+                                        </p>
+
+                                        <p>
+                                            <label>Currency</label><br>
+                                            <input type="text" class="currency" value="INR" readonly>
+                                        </p>
+
+                                        <p>
+                                            <label>Available</label><br>
+                                            <select class="is-available">
+                                                <option value="1" selected>Yes</option>
+                                                <option value="0">No</option>
+                                            </select>
+                                        </p>
+                                    </fieldset>
+                                </td>
+
+                            <?php endfor; ?>
+                        </tr>
+                    </table>
+                </details>
+
+                <br>
+
+            </template>
+
+            <br>
+        </div>
 
         <br>
 
         <button type="submit">Save Watch</button>
     </form>
+
+    <script src="../../assets/js/add.js"></script>
 </body>
 
 </html>

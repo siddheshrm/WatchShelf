@@ -26,7 +26,7 @@ if ($result) {
 
 // Fetch total unique retailers
 $totalRetailers = 0;
-$result = $conn->query("SELECT COUNT(DISTINCT retailer_name) AS total FROM watch_retailers");
+$result = $conn->query("SELECT COUNT(DISTINCT retailer_name) AS total FROM watch_variants");
 
 if ($result) {
     $totalRetailers = $result->fetch_assoc()['total'];
@@ -48,9 +48,7 @@ $conn->close();
 <body>
     <h1>WatchShelf Admin Dashboard</h1>
 
-    <p>
-        Welcome, <strong><?= htmlspecialchars($_SESSION['email']); ?></strong>
-    </p>
+    <p>Welcome, <strong><?= htmlspecialchars($_SESSION['email']); ?></strong></p>
 
     <hr>
 
@@ -84,11 +82,7 @@ $conn->close();
     <ul>
         <li><a href="watches/add.php">Add Watch</a></li>
         <li><a href="watches/list.php">Manage Watches</a></li>
-        <li>
-            <a href="logout.php" onclick="return confirm('Are you sure you want to log out?');">
-                Logout
-            </a>
-        </li>
+        <li><a href="logout.php" onclick="return confirm('Are you sure you want to log out?');">Logout</a></li>
     </ul>
 </body>
 

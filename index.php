@@ -41,34 +41,29 @@ if (isset($_GET['search_submit']) && !empty(trim($_GET['search'] ?? ''))) {
     $page_title = $quickLink['title'];
 
     $watchIds = filterQuickLinkWatches($conn, $quickLink['filters']);
-
 } else {
-    // Display watches using user-selected filters, or all watches when no filters are applied
+    // Check if a valid quick link was selected
     $watchIds = filterWatches($conn, $_GET);
 }
-
-// No watches matched the search/filter criteria
 if (empty($watchIds)) {
     $watchResult = false;
 } else {
-    // Create placeholders for the prepared statement
+    // Display watches using user-selected filters, or all watches when no filters are applied
     $placeholders = implode(',', array_fill(0, count($watchIds), '?'));
 
-    // Include only available retailer listings unless out-of-stock watches are requested
-    $joinCondition = $includeOutOfStock ? "wr.watch_id = w.id" : "wr.watch_id = w.id AND wr.is_available = 1";
-
-    $sql = "SELECT w.*, MIN(wr.price) AS min_price
+    $sql = "SELECT w.*, (SELECT image_folder FROM watch_variants dv WHERE dv.watch_id = w.id AND dv.is_default = 1 LIMIT 1) AS default_image_folder, MIN(CASE WHEN wr.is_available = 1 AND wr.price IS NOT NULL THEN wr.price END) AS min_price, MAX(wr.is_available) AS has_stock, COUNT(DISTINCT wr.color_name) AS color_count, COUNT(*) AS variant_count
                 FROM watches w
-                LEFT JOIN watch_retailers wr
-                ON $joinCondition
-                WHERE w.id IN ($placeholders)";
+                LEFT JOIN watch_variants wr
+                ON wr.watch_id = w.id
+                WHERE w.id IN ($placeholders)
+                AND w.is_active = 1
+                GROUP BY w.id";
 
-    // Exclude watches with no available retailer listings
     if (!$includeOutOfStock) {
-        $sql .= " AND wr.watch_id IS NOT NULL ";
+        $sql .= " HAVING has_stock = 1 ";
     }
 
-    $sql .= "GROUP BY w.id ORDER BY $orderBy";
+    $sql .= " ORDER BY $orderBy";
 
     $stmt = $conn->prepare($sql);
 
@@ -144,7 +139,6 @@ include 'includes/header.php';
 
                         if (!empty($watch['image_folder'])) {
                             for ($i = 1; $i <= MAX_WATCH_IMAGES; $i++) {
-
                                 $relativeFile = sprintf('%s/%d.webp', $watch['image_folder'], $i);
 
                                 if (file_exists(WATCH_IMAGE_DIR . '/' . $relativeFile)) {
@@ -157,15 +151,22 @@ include 'includes/header.php';
 
                         <article class="watch-card">
                             <a href="<?= BASE_URL ?>/watch/details.php?id=<?= $watch['id'] ?>">
+                                <?php
+                                $imagePath = DEFAULT_WATCH_IMAGE;
+
+                                if (!empty($watch['default_image_folder'])) {
+                                    $imagePath = WATCH_IMAGE_URL . '/' . $watch['default_image_folder'] . '/1.webp';
+                                }
+                                ?>
                                 <img src="<?= htmlspecialchars($imagePath) ?>"
-                                    alt="<?= htmlspecialchars($watch['brand'] . ' ' . $watch['model_name']) ?>" loading="lazy">
+                                    alt="<?= htmlspecialchars($watch['brand'] . ' ' . $watch['model_name']) ?>" loading="lazy"
+                                    onerror="this.onerror=null;this.src='<?= htmlspecialchars(DEFAULT_WATCH_IMAGE) ?>';">
 
                                 <?php if ($watch['is_featured']): ?>
                                     <p><?= FEATURED_LABEL ?></p>
                                 <?php endif; ?>
 
-                                <h3><?= htmlspecialchars($watch['brand']) ?></h3>
-
+                                <h3><?= htmlspecialchars($watch['brand']) ?></h3>s
                                 <h4><?= htmlspecialchars($watch['model_name']) ?></h4>
 
                                 <?php if ($watch['owner_status'] === OWNER_STATUS_OWNED): ?>

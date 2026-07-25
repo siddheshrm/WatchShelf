@@ -24,7 +24,7 @@ function searchWatches(mysqli $conn, string $search): array
 
     $sql = "SELECT DISTINCT w.id
                 FROM watches w
-                LEFT JOIN watch_retailers wr
+                LEFT JOIN watch_variants wr
                 ON $joinCondition
                 WHERE w.is_active = 1";
 
@@ -64,7 +64,6 @@ function searchWatches(mysqli $conn, string $search): array
 
             $priceParamTypes .= "d";
             $priceParams[] = (float) $word;
-
         } else {
             $keyword = '%' . $word . '%';
 
@@ -103,7 +102,6 @@ function searchWatches(mysqli $conn, string $search): array
     }
 
     $stmt->execute();
-
     $result = $stmt->get_result();
 
     $searchWatchIds = [];
@@ -126,7 +124,7 @@ function filterQuickLinkWatches(mysqli $conn, array $filters): array
 
     $sql = "SELECT DISTINCT w.id
                 FROM watches w
-                LEFT JOIN watch_retailers wr
+                LEFT JOIN watch_variants wr
                 ON $joinCondition
                 WHERE w.is_active = 1";
 
@@ -149,7 +147,6 @@ function filterQuickLinkWatches(mysqli $conn, array $filters): array
 
     foreach ($filters as $key => $value) {
         if ($key === 'max_price') {
-
             $sql .= " AND wr.price <= ?";
 
             $bindTypes .= 'd';
@@ -161,15 +158,12 @@ function filterQuickLinkWatches(mysqli $conn, array $filters): array
         if (isset($columnMap[$key])) {
             // Men and Women pages should also include Unisex watches
             if ($key === 'gender' && in_array($value, ['Men', 'Women'], true)) {
-
                 $sql .= " AND ({$columnMap[$key]} = ? OR {$columnMap[$key]} = ?)";
 
                 $bindTypes .= 'ss';
                 $params[] = $value;
                 $params[] = 'Unisex';
-
             } else {
-
                 $sql .= " AND {$columnMap[$key]} = ?";
 
                 $bindTypes .= 's';

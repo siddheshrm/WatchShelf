@@ -24,7 +24,7 @@ $search = preg_replace('/\s+/', ' ', $search);
 $words = array_unique(explode(' ', $search));
 
 // Select only active watches that are not the current watch, and dynamically build the query based on the extracted keywords
-$sql = "SELECT DISTINCT w.*
+$sql = "SELECT w.*, (SELECT image_folder FROM watch_variants WHERE watch_id = w.id AND is_default = 1 LIMIT 1) AS image_folder
             FROM watches w
             WHERE w.is_active = 1
             AND w.id != ?";
@@ -105,16 +105,13 @@ $result = $stmt->get_result();
                 ?>
 
                 <a href="details.php?id=<?= $relatedWatch['id'] ?>" class="related-card">
-
                     <img src="<?= htmlspecialchars($image) ?>"
                         alt="<?= htmlspecialchars($relatedWatch['brand'] . ' ' . $relatedWatch['model_name']) ?>"
                         loading="lazy">
 
                     <div class="related-card-content">
                         <h3><?= htmlspecialchars($relatedWatch['brand']) ?></h3>
-
                         <p><?= htmlspecialchars($relatedWatch['model_name']) ?></p>
-
                         <span><?= htmlspecialchars(ucfirst($relatedWatch['movement_type'])) ?></span>
                     </div>
                 </a>
