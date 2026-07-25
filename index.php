@@ -166,7 +166,7 @@ include 'includes/header.php';
                                     <p><?= FEATURED_LABEL ?></p>
                                 <?php endif; ?>
 
-                                <h3><?= htmlspecialchars($watch['brand']) ?></h3>s
+                                <h3><?= htmlspecialchars($watch['brand']) ?></h3>
                                 <h4><?= htmlspecialchars($watch['model_name']) ?></h4>
 
                                 <?php if ($watch['owner_status'] === OWNER_STATUS_OWNED): ?>

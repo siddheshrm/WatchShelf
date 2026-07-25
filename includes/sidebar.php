@@ -2,6 +2,7 @@
 $selectedGenders = $_GET['gender'] ?? [];
 $selectedBrands = $_GET['brand'] ?? [];
 $selectedRetailers = $_GET['retailer'] ?? [];
+$selectedColors = $_GET['color'] ?? [];
 $selectedMovement = $_GET['movement'] ?? [];
 
 // Returns watch IDs matching the selected sidebar filters
@@ -73,6 +74,18 @@ function filterWatches(mysqli $conn, array $filters): array
         }
     }
 
+    // Dial Colour
+    if (!empty($filters['color']) && is_array($filters['color'])) {
+        $placeholders = implode(',', array_fill(0, count($filters['color']), '?'));
+
+        $sql .= " AND LOWER(wr.color_name) IN ($placeholders)";
+
+        foreach ($filters['color'] as $color) {
+            $bindTypes .= "s";
+            $params[] = strtolower(trim($color));
+        }
+    }
+
     // Movement
     if (!empty($filters['movement']) && is_array($filters['movement'])) {
         $placeholders = implode(',', array_fill(0, count($filters['movement']), '?'));
@@ -120,6 +133,20 @@ $brands = [];
 
 while ($row = $brandResult->fetch_assoc()) {
     $brands[] = $row;
+}
+
+// Fetch all Dial Colors
+$colorQuery = "SELECT DISTINCT color_name
+                            FROM watch_variants
+                            WHERE color_name IS NOT NULL
+                            AND TRIM(color_name) <> ''
+                            ORDER BY color_name ASC";
+
+$colorResult = $conn->query($colorQuery);
+$colors = [];
+
+while ($row = $colorResult->fetch_assoc()) {
+    $colors[] = $row;
 }
 
 // Fetch all retailers
@@ -181,6 +208,19 @@ while ($row = $retailerResult->fetch_assoc()) {
                         <?= htmlspecialchars($retailer['retailer_name']) ?>
                     </label>
 
+                <?php endforeach; ?>
+            </div>
+
+            <!-- Dial Colours -->
+            <div class="filter-group">
+                <h3>Dial Colours</h3>
+
+                <?php foreach ($colors as $color): ?>
+                    <label>
+                        <input type="checkbox" name="color[]" value="<?= htmlspecialchars($color['color_name']) ?>"
+                            <?= in_array($color['color_name'], $selectedColors, true) ? 'checked' : '' ?>>
+                        <?= htmlspecialchars($color['color_name']) ?>
+                    </label>
                 <?php endforeach; ?>
             </div>
 

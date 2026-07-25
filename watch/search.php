@@ -3,6 +3,8 @@
 // Searches watches using free-text keywords and returns matching watch IDs
 function searchWatches(mysqli $conn, string $search): array
 {
+    $colorGroups = require_once __DIR__ . '/../config/color-groups.php';
+
     $search = strtolower(trim($search));
 
     if ($search === '') {
@@ -14,6 +16,7 @@ function searchWatches(mysqli $conn, string $search): array
     $search = preg_replace('/\s+/', ' ', $search);
 
     $words = explode(' ', $search);
+    $words = extractSearchTerms($search, $colorGroups);
 
     // Ignore common filler words so only meaningful search terms contribute to the SQL query
     $ignoreWords = ['watch', 'watches', 'under', 'below', 'less', 'than', 'for', 'with', 'around', 'about', 'upto', 'up', 'to'];
@@ -77,10 +80,11 @@ function searchWatches(mysqli $conn, string $search): array
                                                         OR LOWER(w.movement_type) LIKE ?
                                                         OR LOWER(w.display_type) LIKE ?
                                                         OR LOWER(w.crystal_type) LIKE ?
+                                                        OR LOWER(wr.color_name) LIKE ?
                                                         OR LOWER(w.tags) LIKE ?
                                                     )";
 
-            for ($i = 0; $i < 9; $i++) {
+            for ($i = 0; $i < 10; $i++) {
                 $keywordParamTypes .= "s";
                 $keywordParams[] = $keyword;
             }
@@ -112,6 +116,78 @@ function searchWatches(mysqli $conn, string $search): array
 
     $stmt->close();
     return $searchWatchIds;
+}
+
+// Expands recognised colour names and aliases into all related colours for broader searching
+function expandColorKeywords(array $terms, array $colorGroups): array
+{
+    $expandedColor = [];
+
+    foreach ($terms as $term) {
+        $term = strtolower(trim($term));
+
+        if ($term === '') {
+            continue;
+        }
+
+        $expandedColor[] = $term;
+
+        foreach ($colorGroups as $group) {
+            $aliases = array_map('strtolower', $group['aliases']);
+            $colors = array_map('strtolower', $group['colors']);
+
+            if (in_array($term, $aliases, true) || in_array($term, $colors, true)) {
+                $expandedColor = array_merge($expandedColor, $colors);
+            }
+        }
+    }
+
+    return array_values(array_unique($expandedColor));
+}
+
+// Extracts search terms by preserving recognised multi-word colour names
+// Expanding them into related colour groups, and finally tokenising the remaining text into individual keywords
+function extractSearchTerms(string $search, array $colorGroups): array
+{
+    $terms = [];
+
+    // Build searchable phrases from aliases and colours
+    $phrases = [];
+
+    foreach ($colorGroups as $group) {
+        foreach (array_merge($group['aliases'], $group['colors']) as $phrase) {
+            $phrases[] = $phrase;
+        }
+    }
+
+    // Longest phrases first
+    usort($phrases, fn($a, $b) => strlen($b) <=> strlen($a));
+
+    foreach ($phrases as $phrase) {
+        if (stripos($search, $phrase) === false) {
+            continue;
+        }
+
+        // Keep the complete phrase
+        $terms[] = strtolower($phrase);
+
+        // Also search the individual words
+        foreach (preg_split('/\s+/', strtolower($phrase)) as $word) {
+            $terms[] = $word;
+        }
+
+        // Prevent duplicate matching later
+        $search = preg_replace('/' . preg_quote($phrase, '/') . '/i', ' ', $search, 1);
+    }
+
+    // Remaining words
+    foreach (preg_split('/\s+/', strtolower(trim($search))) as $word) {
+        if ($word !== '') {
+            $terms[] = $word;
+        }
+    }
+
+    return expandColorKeywords(array_unique($terms), $colorGroups);
 }
 
 // Returns watch IDs matching the selected quick-link filters
