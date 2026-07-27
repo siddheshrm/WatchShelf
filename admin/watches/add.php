@@ -114,7 +114,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             $retailerStmt->close();
 
-            header("Location: ../dashboard.php");
+            header("Location: list.php");
             // $message = "Watch added successfully.";
             exit();
         } else {

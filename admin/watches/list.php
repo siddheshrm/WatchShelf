@@ -52,6 +52,7 @@ $totalWatches = $result ? $result->num_rows : 0;
             <th>#</th>
             <th>Image</th>
             <th>Watch</th>
+            <th>Owner Status</th>
             <th>MRP</th>
             <th>Gender</th>
             <th>Available Colors</th>
@@ -68,6 +69,7 @@ $totalWatches = $result ? $result->num_rows : 0;
                 <tr>
                     <!-- Sr. No. (#) -->
                     <td><?= $srNo++; ?></td>
+
 
                     <!-- Image -->
                     <?php
@@ -89,6 +91,9 @@ $totalWatches = $result ? $result->num_rows : 0;
                         <?= htmlspecialchars($watch['brand']); ?>
                         <?= htmlspecialchars($watch['model_name']); ?>
                     </td>
+
+                    <!-- Owner Status -->
+                    <td><?= ucfirst(htmlspecialchars($watch['owner_status'])) ?></td>
 
                     <!-- MRP -->
                     <td>₹<?= number_format($watch['mrp'], 2); ?></td>

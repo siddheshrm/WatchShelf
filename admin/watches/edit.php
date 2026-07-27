@@ -90,7 +90,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             die($conn->error);
         }
 
-        $stmt->bind_param("ssisssdssisssiisi", $brand, $modelName, $mrp, $gender, $caseMaterial, $caseDiameter, $bandMaterial, $movementType, $waterResistance, $displayType, $crystalType, $tags, $warrantyYears, $isFeatured, $ownerStatus, $isActive, $watchId);
+        $stmt->bind_param("ssdssdssisssiisii", $brand, $modelName, $mrp, $gender, $caseMaterial, $caseDiameter, $bandMaterial, $movementType, $waterResistance, $displayType, $crystalType, $tags, $warrantyYears, $isFeatured, $ownerStatus, $isActive, $watchId);
 
         if ($stmt->execute()) {
             $deleteStmt = $conn->prepare("DELETE FROM watch_variants WHERE watch_id = ?");

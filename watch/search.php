@@ -164,7 +164,7 @@ function extractSearchTerms(string $search, array $colorGroups): array
     usort($phrases, fn($a, $b) => strlen($b) <=> strlen($a));
 
     foreach ($phrases as $phrase) {
-        if (stripos($search, $phrase) === false) {
+        if (!preg_match('/\b' . preg_quote($phrase, '/') . '\b/i', $search)) {
             continue;
         }
 
@@ -177,7 +177,7 @@ function extractSearchTerms(string $search, array $colorGroups): array
         }
 
         // Prevent duplicate matching later
-        $search = preg_replace('/' . preg_quote($phrase, '/') . '/i', ' ', $search, 1);
+        $search = preg_replace('/\b' . preg_quote($phrase, '/') . '\b/i', ' ', $search, 1);
     }
 
     // Remaining words
