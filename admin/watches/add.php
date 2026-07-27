@@ -132,236 +132,240 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Add Watch | WatchShelf Admin</title>
-    <link rel="stylesheet" href="<?= CSS_URL ?>/admin.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="<?= CSS_URL ?>/watch-form.css">
 </head>
 
 <body>
-    <h1>Add Watch</h1>
+    <div class="page">
+        <h1>Add New Watch</h1>
 
-    <p>
-        <a href="../dashboard.php">Dashboard</a> |
-        <a href="list.php">Manage Watches</a>
-    </p>
+        <div class="top-links">
+            <a href="../dashboard.php">Dashboard</a>
+            <span>|</span>
+            <a href="list.php">Manage Watches</a>
+        </div>
 
-    <hr>
+        <?php if (!empty($message)): ?>
+            <div class="alert">
+                <?= htmlspecialchars($message); ?>
+            </div>
+        <?php endif; ?>
 
-    <?php if (!empty($message)): ?>
-        <p><?= htmlspecialchars($message); ?></p>
-    <?php endif; ?>
+        <form action="" method="POST" enctype="multipart/form-data">
+            <fieldset class="card">
+                <legend>Basic Information</legend>
 
-    <form action="" method="POST" enctype="multipart/form-data">
-        <fieldset>
-            <legend>Basic Information</legend>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="brand">Brand *</label>
+                        <input type="text" id="brand" name="brand" required>
+                    </div>
 
-            <p>
-                <label for="brand">Brand *</label><br>
-                <input type="text" id="brand" name="brand" required>
-            </p>
+                    <div class="form-group">
+                        <label for="model_name">Model *</label>
+                        <input type="text" id="model_name" name="model_name" required>
+                    </div>
 
-            <p>
-                <label for="model_name">Model *</label><br>
-                <input type="text" id="model_name" name="model_name" required>
-            </p>
+                    <div class="form-group">
+                        <label for="mrp">MRP *</label>
+                        <input type="number" step="0.01" id="mrp" name="mrp" required>
+                    </div>
 
-            <p>
-                <label for="mrp">MRP *</label><br>
-                <input type="number" step="0.01" id="mrp" name="mrp" required>
-            </p>
-
-            <p>
-                <label for="gender">Gender</label><br>
-                <select id="gender" name="gender">
-                    <option value="men">Men</option>
-                    <option value="women">Women</option>
-                    <option value="unisex" selected>Unisex</option>
-                </select>
-            </p>
-
-            <p>
-                <label><input type="checkbox" name="is_featured" value="1">Featured Watch</label>
-            </p>
-
-            <p>
-                <label for="owner_status">Owner Status</label><br>
-                <select id="owner_status" name="owner_status">
-                    <option value="none" selected>None</option>
-                    <option value="owned">Owned</option>
-                    <option value="interested">Interested</option>
-                </select>
-            </p>
-
-            <p>
-                <label><input type="checkbox" name="is_active" value="1" checked>Active</label>
-            </p>
-        </fieldset>
-
-        <br>
-
-        <fieldset>
-            <legend>Specifications</legend>
-
-            <p>
-                <label for="case_material">Case Material</label><br>
-                <input type="text" id="case_material" name="case_material">
-            </p>
-
-            <p>
-                <label for="case_diameter_mm">Case Diameter (mm)</label><br>
-                <input type="number" step="0.1" id="case_diameter_mm" name="case_diameter_mm">
-            </p>
-
-            <p>
-                <label for="band_material">Band Material</label><br>
-                <input type="text" id="band_material" name="band_material">
-            </p>
-
-            <p>
-                <label for="movement_type">Movement Type</label><br>
-                <select id="movement_type" name="movement_type">
-                    <option value="">Select</option>
-                    <option value="quartz">Quartz</option>
-                    <option value="automatic">Automatic</option>
-                    <option value="manual">Manual</option>
-                    <option value="mechanical">Mechanical</option>
-                    <option value="solar">Solar</option>
-                    <option value="kinetic">Kinetic</option>
-                </select>
-            </p>
-
-            <p>
-                <label for="display_type">Display Type</label><br>
-                <select id="display_type" name="display_type">
-                    <option value="">Select</option>
-                    <option value="analog">Analog</option>
-                    <option value="digital">Digital</option>
-                    <option value="ana-digi">Ana-Digi</option>
-                </select>
-            </p>
-
-            <p>
-                <label for="crystal_type">Crystal Type</label><br>
-                <input type="text" id="crystal_type" name="crystal_type">
-            </p>
-
-            <p>
-                <label for="water_resistance_atm">Water Resistance (ATM)</label><br>
-                <input type="number" id="water_resistance_atm" name="water_resistance_atm">
-            </p>
-
-            <p>
-                <label for="warranty_years">Warranty (Years)</label><br>
-                <input type="number" id="warranty_years" name="warranty_years">
-            </p>
-
-            <p>
-                <label for="tags">Tags</label><br>
-                <input type="text" id="tags" name="tags" placeholder="Enter tags separated by commas">
-            </p>
-        </fieldset>
-
-        <br>
-
-        <h2>Color Options</h2>
-
-        <div id="colorsContainer">
-            <p><button type="button" id="addColorBtn">+ Add Color</button></p>
-
-            <template id="colorTemplate">
-                <details open class="color-block">
-                    <summary>
-                        <strong>New Color</strong>
-                    </summary>
-
-                    <br>
-
-                    <p>
-                        <label>Color</label><br>
-                        <select class="color-select">
-                            <option value="">Select Color</option>
-
-                            <?php foreach (array_keys($COLOR_MAP) as $colorName): ?>
-                                <option value="<?= htmlspecialchars($colorName); ?>">
-                                    <?= htmlspecialchars($colorName); ?>
-                                </option>
-                            <?php endforeach; ?>
+                    <div class="form-group">
+                        <label for="gender">Gender</label>
+                        <select id="gender" name="gender">
+                            <option value="men">Men</option>
+                            <option value="women">Women</option>
+                            <option value="unisex" selected>Unisex</option>
                         </select>
-                    </p>
+                    </div>
 
-                    <p>
-                        <label>
-                            <input type="radio" name="default_color" class="default-color">Is Default Color?
-                        </label>
-                    </p>
+                    <div class="form-group">
+                        <label for="owner_status">Owner Status</label>
+                        <select id="owner_status" name="owner_status">
+                            <option value="none" selected>None</option>
+                            <option value="owned">Owned</option>
+                            <option value="interested">Interested</option>
+                        </select>
+                    </div>
 
-                    <table cellpadding="10">
-                        <tr>
+                    <div class="form-group">
+                        <label>Status</label>
 
-                            <?php for ($i = 1; $i <= 5; $i++): ?>
-                                <td valign="top">
+                        <div class="checkbox-column">
+                            <label>
+                                <input type="checkbox" name="is_featured" value="1">Featured Watch
+                            </label>
+
+                            <label>
+                                <input type="checkbox" name="is_active" value="1" checked>Active
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </fieldset>
+
+            <fieldset class="card">
+                <legend>Specifications</legend>
+
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="case_material">Case Material</label>
+                        <input type="text" id="case_material" name="case_material">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="case_diameter_mm">Case Diameter (mm)</label>
+                        <input type="number" step="0.1" id="case_diameter_mm" name="case_diameter_mm">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="band_material">Band Material</label>
+                        <input type="text" id="band_material" name="band_material">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="movement_type">Movement Type</label>
+                        <select id="movement_type" name="movement_type">
+                            <option value="">Select</option>
+                            <option value="quartz">Quartz</option>
+                            <option value="automatic">Automatic</option>
+                            <option value="manual">Manual</option>
+                            <option value="mechanical">Mechanical</option>
+                            <option value="solar">Solar</option>
+                            <option value="kinetic">Kinetic</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="display_type">Display Type</label>
+                        <select id="display_type" name="display_type">
+                            <option value="">Select</option>
+                            <option value="analog">Analog</option>
+                            <option value="digital">Digital</option>
+                            <option value="ana-digi">Ana-Digi</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="crystal_type">Crystal Type</label>
+                        <input type="text" id="crystal_type" name="crystal_type">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="water_resistance_atm">Water Resistance (ATM)</label>
+                        <input type="number" id="water_resistance_atm" name="water_resistance_atm">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="warranty_years">Warranty (Years)</label>
+                        <input type="number" id="warranty_years" name="warranty_years">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="tags">Tags</label>
+                        <input type="text" id="tags" name="tags" placeholder="Enter tags separated by commas">
+                    </div>
+                </div>
+            </fieldset>
+
+            <div class="card">
+                <div class="section-header">
+                    <h2>Color Options</h2>
+
+                    <button type="button" id="addColorBtn">+ Add Color</button>
+                </div>
+
+                <div id="colorsContainer">
+                    <template id="colorTemplate">
+                        <details open class="color-block">
+                            <summary>
+                                <strong>New Color</strong>
+                            </summary>
+
+                            <div class="form-group">
+                                <label>Color</label>
+                                <select class="color-select">
+                                    <option value="">Select Color</option>
+
+                                    <?php foreach (array_keys($COLOR_MAP) as $colorName): ?>
+                                        <option value="<?= htmlspecialchars($colorName); ?>">
+                                            <?= htmlspecialchars($colorName); ?>
+                                        </option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label>
+                                    <input type="radio" name="default_color" class="default-color">Default Color
+                                </label>
+                            </div>
+
+                            <div class="retailer-grid">
+                                <?php for ($i = 1; $i <= 5; $i++): ?>
 
                                     <fieldset class="retailer-block">
                                         <legend>Retailer <?= $i; ?></legend>
 
-                                        <p>
-                                            <label>Retailer Name</label><br>
+                                        <div class="form-group">
+                                            <label>Retailer Name</label>
                                             <input type="text" class="retailer-name">
-                                        </p>
+                                        </div>
 
-                                        <p>
-                                            <label>Retailer Type</label><br>
+                                        <div class="form-group">
+                                            <label>Retailer Type</label>
                                             <select class="retailer-type">
                                                 <option value="ecommerce" selected>E-commerce</option>
                                                 <option value="brand_website">Brand Website</option>
                                                 <option value="offline">Offline</option>
                                             </select>
-                                        </p>
+                                        </div>
 
-                                        <p>
-                                            <label>Base URL</label><br>
+                                        <div class="form-group">
+                                            <label>Base URL</label>
                                             <input type="url" class="base-url">
-                                        </p>
+                                        </div>
 
-                                        <p>
-                                            <label>Affiliate URL</label><br>
+                                        <div class="form-group">
+                                            <label>Affiliate URL</label>
                                             <input type="url" class="affiliate-url">
-                                        </p>
+                                        </div>
 
-                                        <p>
-                                            <label>Price</label><br>
+                                        <div class="form-group">
+                                            <label>Price</label>
                                             <input type="number" step="0.01" class="price">
-                                        </p>
+                                        </div>
 
-                                        <p>
-                                            <label>Currency</label><br>
+                                        <div class="form-group">
+                                            <label>Currency</label>
                                             <input type="text" class="currency" value="INR" readonly>
-                                        </p>
+                                        </div>
 
-                                        <p>
-                                            <label>Available</label><br>
+                                        <div class="form-group">
+                                            <label>Available</label>
                                             <select class="is-available">
                                                 <option value="1" selected>Yes</option>
                                                 <option value="0">No</option>
                                             </select>
-                                        </p>
+                                        </div>
                                     </fieldset>
-                                </td>
 
-                            <?php endfor; ?>
-                        </tr>
-                    </table>
-                </details>
+                                <?php endfor; ?>
+                            </div>
+                        </details>
+                    </template>
+                </div>
+            </div>
 
-                <br>
-
-            </template>
-
-            <br>
-        </div>
-
-        <br>
-
-        <button type="submit">Save Watch</button>
-    </form>
+            <div class="form-actions">
+                <button type="submit">Save Watch</button>
+            </div>
+        </form>
+    </div>
 
     <script src="../../assets/js/add.js"></script>
 </body>

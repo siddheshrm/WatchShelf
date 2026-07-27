@@ -1,0 +1,158 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  margin: 30px;
+  font-family: "Poppins", sans-serif;
+  background: #f6f7fb;
+  color: #333;
+}
+
+h1 {
+  margin-bottom: 15px;
+  font-size: 28px;
+}
+
+h2 {
+  margin-bottom: 15px;
+  font-size: 22px;
+}
+
+a {
+  color: #1565c0;
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+.login-container {
+  min-height: calc(100vh - 60px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.login-card {
+  width: 100%;
+  max-width: 420px;
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  padding: 30px;
+}
+
+.login-card h1,
+.subtitle {
+  text-align: center;
+}
+
+.subtitle {
+  margin-bottom: 25px;
+  color: #666;
+}
+
+.form-group {
+  margin-bottom: 18px;
+}
+
+.form-group label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+
+.form-group input {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-family: inherit;
+  font-size: 14px;
+}
+
+.form-group input:focus {
+  outline: none;
+  border-color: #1565c0;
+}
+
+button {
+  width: 100%;
+  padding: 10px;
+  border: none;
+  border-radius: 5px;
+  background: #1565c0;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+button:hover {
+  background: #0d47a1;
+}
+
+.alert {
+  margin-bottom: 20px;
+  padding: 12px 16px;
+  background: #ffebee;
+  border-left: 4px solid #c62828;
+  color: #c62828;
+}
+
+.page {
+  max-width: 1200px;
+}
+
+.welcome-card {
+  margin: 20px 0;
+  padding: 12px 16px;
+  background: #fff;
+  border-left: 4px solid #1565c0;
+}
+
+.card {
+  margin-bottom: 20px;
+  padding: 20px;
+  background: #fff;
+  border: 1px solid #ddd;
+}
+
+.stats-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.stats-table td {
+  padding: 12px;
+  border-bottom: 1px solid #e5e5e5;
+}
+
+.stats-table tr:nth-child(even) {
+  background: #fafafa;
+}
+
+.stats-table td:first-child {
+  width: 260px;
+  font-weight: 600;
+}
+
+.card ul {
+  list-style: none;
+}
+
+.card li {
+  margin-bottom: 12px;
+}
+
+.card li:last-child {
+  margin-bottom: 0;
+}
+
+.card li a {
+  font-weight: 600;
+}

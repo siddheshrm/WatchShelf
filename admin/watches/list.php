@@ -30,111 +30,123 @@ $totalWatches = $result ? $result->num_rows : 0;
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Manage Watches | WatchShelf Admin</title>
-    <link rel="stylesheet" href="<?= CSS_URL ?>/admin.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="<?= CSS_URL ?>/list.css">
 </head>
 
 <body>
-    <h1>Manage Watches</h1>
+    <div class="page">
+        <h1>Manage Watches</h1>
 
-    <p>
-        <a href="../dashboard.php">Dashboard</a> |
-        <a href="add.php">Add Watch</a>
-    </p>
+        <div class="top-links">
+            <a href="../dashboard.php">Dashboard</a>
+            <span>|</span>
+            <a href="add.php" class="btn-primary">Add New Watch</a>
+        </div>
 
-    <hr>
+        <div class="summary">
+            <strong>Total Watches:</strong> <?= $totalWatches; ?>
+        </div>
 
-    <p>
-        <strong>Total Watches:</strong> <?= $totalWatches; ?>
-    </p>
-
-    <table border="1" cellpadding="8" cellspacing="0">
-        <tr>
-            <th>#</th>
-            <th>Image</th>
-            <th>Watch</th>
-            <th>Owner Status</th>
-            <th>MRP</th>
-            <th>Gender</th>
-            <th>Available Colors</th>
-            <th>Retailer Records</th>
-            <th>Featured?</th>
-            <th>Active?</th>
-            <th>Actions</th>
-        </tr>
-
-        <?php if ($totalWatches > 0): ?>
-            <?php $srNo = 1; ?>
-
-            <?php while ($watch = $result->fetch_assoc()): ?>
-                <tr>
-                    <!-- Sr. No. (#) -->
-                    <td><?= $srNo++; ?></td>
-
-
-                    <!-- Image -->
-                    <?php
-                    $imageFile = WATCH_IMAGE_DIR . '/' . $watch['default_image_folder'] . '/1.webp';
-                    $imageUrl = WATCH_IMAGE_URL . '/' . $watch['default_image_folder'] . '/1.webp';
-                    ?>
-
-                    <td>
-                        <?php if (file_exists($imageFile)): ?>
-                            <img src="<?= htmlspecialchars($imageUrl); ?>"
-                                alt="<?= htmlspecialchars($watch['brand'] . ' ' . $watch['model_name']); ?>" width="80">
-                        <?php else: ?>
-                            <img src="<?= DEFAULT_WATCH_IMAGE; ?>" alt="No Image" width="80" height="80">
-                        <?php endif; ?>
-                    </td>
-
-                    <!-- Brand & Model -->
-                    <td>
-                        <?= htmlspecialchars($watch['brand']); ?>
-                        <?= htmlspecialchars($watch['model_name']); ?>
-                    </td>
-
-                    <!-- Owner Status -->
-                    <td><?= ucfirst(htmlspecialchars($watch['owner_status'])) ?></td>
-
-                    <!-- MRP -->
-                    <td>₹<?= number_format($watch['mrp'], 2); ?></td>
-
-                    <!-- Gender -->
-                    <td><?= ucfirst($watch['gender']); ?></td>
-
-                    <!-- Colors Variants -->
-                    <td>
-                        <?= htmlspecialchars($watch['default_color']) ?>
-
-                        <?php if ($watch['total_colors'] > 1): ?>
-                            <small>+<?= $watch['total_colors'] - 1 ?> more</small>
-                        <?php endif; ?>
-                    </td>
-
-                    <!-- Retailer Records -->
-                    <td>
-                        <?= $watch['total_retailers']; ?>
-                        <?= $watch['total_retailers'] == 1 ? 'Retailer' : 'Retailers'; ?>
-                    </td>
-
-                    <!-- Featured and Active status are displayed as 'Yes' or 'No' based on their boolean values -->
-                    <td><?= $watch['is_featured'] ? 'Yes' : 'No'; ?></td>
-                    <td><?= $watch['is_active'] ? 'Yes' : 'No'; ?></td>
-
-                    <!-- Actions -->
-                    <td>
-                        <a href="edit.php?id=<?= $watch['id']; ?>">Edit</a> |
-                        <a href="delete.php?id=<?= $watch['id']; ?>" onclick="return confirm('Delete this watch?');">Delete</a>
-                    </td>
-                </tr>
-
-            <?php endwhile; ?>
-        <?php else: ?>
+        <table class="watch-table">
             <tr>
-                <td colspan="10">No watches found.</td>
+                <th>#</th>
+                <th>Image</th>
+                <th>Watch</th>
+                <th>Owner Status</th>
+                <th>MRP</th>
+                <th>Gender</th>
+                <th>Available Colors</th>
+                <th>Retailer Records</th>
+                <th>Featured?</th>
+                <th>Active?</th>
+                <th>Actions</th>
             </tr>
-        <?php endif; ?>
 
-    </table>
+            <?php if ($totalWatches > 0): ?>
+                <?php $srNo = 1; ?>
+
+                <?php while ($watch = $result->fetch_assoc()): ?>
+                    <tr>
+                        <!-- Sr. No. (#) -->
+                        <td><?= $srNo++; ?></td>
+
+
+                        <!-- Image -->
+                        <?php
+                        $imageFile = WATCH_IMAGE_DIR . '/' . $watch['default_image_folder'] . '/1.webp';
+                        $imageUrl = WATCH_IMAGE_URL . '/' . $watch['default_image_folder'] . '/1.webp';
+                        ?>
+
+                        <td>
+                            <?php if (file_exists($imageFile)): ?>
+                                <img src="<?= htmlspecialchars($imageUrl); ?>"
+                                    alt="<?= htmlspecialchars($watch['brand'] . ' ' . $watch['model_name']); ?>" width="80">
+                            <?php else: ?>
+                                <img src="<?= DEFAULT_WATCH_IMAGE; ?>" alt="No Image" width="80" height="80">
+                            <?php endif; ?>
+                        </td>
+
+                        <!-- Brand & Model -->
+                        <td>
+                            <?= htmlspecialchars($watch['brand']); ?>
+                            <?= htmlspecialchars($watch['model_name']); ?>
+                        </td>
+
+                        <!-- Owner Status -->
+                        <?php $status = $watch['owner_status']; ?>
+                        <td class="owner-<?= $status ?>"><?= ucfirst($status) ?></td>
+
+                        <!-- MRP -->
+                        <td>₹<?= number_format($watch['mrp'], 2); ?></td>
+
+                        <!-- Gender -->
+                        <td><?= ucfirst($watch['gender']); ?></td>
+
+                        <!-- Colors Variants -->
+                        <td>
+                            <?= htmlspecialchars($watch['default_color']) ?>
+
+                            <?php if ($watch['total_colors'] > 1): ?>
+                                <small>+<?= $watch['total_colors'] - 1 ?> more</small>
+                            <?php endif; ?>
+                        </td>
+
+                        <!-- Retailer Records -->
+                        <td>
+                            <?= $watch['total_retailers']; ?>
+                            <?= $watch['total_retailers'] == 1 ? 'Retailer' : 'Retailers'; ?>
+                        </td>
+
+                        <!-- Featured and Active status are displayed as 'Yes' or 'No' based on their boolean values -->
+                        <td class="<?= $watch['is_featured'] ? 'status-yes' : 'status-no' ?>">
+                            <?= $watch['is_featured'] ? 'Yes' : 'No' ?>
+                        </td>
+
+                        <td class="<?= $watch['is_active'] ? 'status-yes' : 'status-no' ?>">
+                            <?= $watch['is_active'] ? 'Yes' : 'No' ?>
+                        </td>
+
+                        <!-- Actions -->
+                        <td>
+                            <a class="action-btn action-edit" href="edit.php?id=<?= $watch['id'] ?>">Edit</a>
+
+                            <a class="action-btn action-delete" href="delete.php?id=<?= $watch['id'] ?>"
+                                onclick="return confirm('Delete this watch?');">Delete</a>
+                        </td>
+                    </tr>
+
+                <?php endwhile; ?>
+            <?php else: ?>
+                <tr>
+                    <td colspan="10">No watches found.</td>
+                </tr>
+            <?php endif; ?>
+
+        </table>
+    </div>
 </body>
 
 </html>
