@@ -2,8 +2,8 @@ let currentImage = 0;
 
 const buyingOptions = document.getElementById("buying-options-content");
 const mainImage = document.getElementById("main-image");
-const nextButton = document.querySelector(".next-image");
-const prevButton = document.querySelector(".prev-image");
+const nextButton = document.querySelector(".gallery-next");
+const prevButton = document.querySelector(".gallery-prev");
 const colorButtons = document.querySelectorAll(".color-item");
 
 updateNavigation();
@@ -67,8 +67,8 @@ function renderBuyingOptions(retailers) {
   }
 
   let html = `
-    <div class="best-price">
-      <p class="best-price-text">Available at
+    <div class="best-offer">
+      <p class="best-offer-text">Available at
         <a href="${bestRetailer.affiliate_url || bestRetailer.base_url}" target="_blank" rel="noopener noreferrer" class="retailer-link">${bestRetailer.retailer_name}</a>
         for
         <strong>${formatPrice(bestRetailer.price)}</strong>

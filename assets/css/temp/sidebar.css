@@ -1,0 +1,135 @@
+/* ==========================================================================
+   FILTER SIDEBAR
+   ========================================================================== */
+
+.filter-sidebar {
+  position: sticky;
+  top: var(--space-xl);
+
+  align-self: start;
+
+  padding: var(--space-md);
+
+  background: var(--color-surface);
+
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+
+  box-shadow: var(--shadow-sm);
+}
+
+.filter-title {
+  margin-bottom: var(--space-lg);
+}
+
+.filter-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xl);
+}
+
+/* ==========================================================================
+   FILTER GROUP
+   ========================================================================== */
+
+.filter-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+
+  padding-bottom: var(--space-lg);
+
+  border-bottom: 1px solid var(--color-border);
+}
+
+.filter-group:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.filter-heading {
+  margin-bottom: var(--space-xs);
+
+  font-size: var(--font-size-md);
+}
+
+.filter-option {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+
+  cursor: pointer;
+
+  width: fit-content;
+  color: var(--color-text-light);
+}
+
+.filter-option input[type="checkbox"] {
+  width: 1rem;
+  height: 1rem;
+  flex-shrink: 0;
+  accent-color: var(--color-accent);
+}
+
+.filter-option:hover {
+  color: var(--color-text);
+}
+
+.filter-option input {
+  accent-color: var(--color-accent);
+}
+
+/* ==========================================================================
+   PRICE INPUT
+   ========================================================================== */
+
+.filter-price {
+  width: 100%;
+
+  padding: 0.7rem 0.9rem;
+
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+}
+
+/* ==========================================================================
+   FILTER ACTIONS
+   ========================================================================== */
+
+.filter-actions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+.filter-button,
+.clear-filters {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  padding: 0.85rem;
+
+  border-radius: var(--radius-md);
+
+  text-align: center;
+
+  transition: var(--transition);
+}
+
+.filter-button {
+  background: var(--color-accent);
+  color: var(--color-text-inverse);
+}
+
+.filter-button:hover {
+  background: var(--color-accent-hover);
+}
+
+.clear-filters {
+  border: 1px solid var(--color-border);
+}
+
+.clear-filters:hover {
+  background: var(--color-background-secondary);
+}

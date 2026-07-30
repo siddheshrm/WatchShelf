@@ -81,44 +81,55 @@ $result = $stmt->get_result();
 ?>
 
 <section class="related-watches">
-    <h2>WatchShelf Recommends</h2>
+    <div class="site-container">
 
-    <div class="related-wrapper">
-        <button class="scroll-btn scroll-left">&#10094;</button>
-
-        <div class="related-grid">
-            <?php
-
-            while ($relatedWatch = $result->fetch_assoc()):
-                // Use the watch's primary image if available; otherwise fall back to the default image
-                $image = DEFAULT_WATCH_IMAGE;
-
-                if (!empty($relatedWatch['image_folder'])) {
-                    $candidate = WATCH_IMAGE_DIR . '/' .
-                        $relatedWatch['image_folder'] . "/1.webp";
-
-                    if (file_exists($candidate)) {
-                        $image = WATCH_IMAGE_URL . '/' .
-                            $relatedWatch['image_folder'] . "/1.webp";
-                    }
-                }
-                ?>
-
-                <a href="details.php?id=<?= $relatedWatch['id'] ?>" class="related-card">
-                    <img src="<?= htmlspecialchars($image) ?>"
-                        alt="<?= htmlspecialchars($relatedWatch['brand'] . ' ' . $relatedWatch['model_name']) ?>"
-                        loading="lazy">
-
-                    <div class="related-card-content">
-                        <h3><?= htmlspecialchars($relatedWatch['brand']) ?></h3>
-                        <p><?= htmlspecialchars($relatedWatch['model_name']) ?></p>
-                        <span><?= htmlspecialchars(ucfirst($relatedWatch['movement_type'])) ?></span>
-                    </div>
-                </a>
-            <?php endwhile; ?>
+        <div class="section-heading">
+            <h2>WatchShelf Recommends</h2>
         </div>
 
-        <button class="scroll-btn scroll-right">&#10095;</button>
+        <div class="related-carousel">
+            <button type="button" class="carousel-btn carousel-btn-left" aria-label="Previous watches">&#10094;</button>
+
+            <div class="related-grid">
+                <?php while ($relatedWatch = $result->fetch_assoc()): ?>
+
+                    <?php
+                    $image = DEFAULT_WATCH_IMAGE;
+
+                    if (!empty($relatedWatch['image_folder'])) {
+                        $candidate = WATCH_IMAGE_DIR . '/' . $relatedWatch['image_folder'] . '/1.webp';
+
+                        if (file_exists($candidate)) {
+                            $image = WATCH_IMAGE_URL . '/' . $relatedWatch['image_folder'] . '/1.webp';
+                        }
+                    }
+                    ?>
+
+                    <a href="details.php?id=<?= $relatedWatch['id'] ?>" class="related-card">
+
+                        <img class="related-card-image" src="<?= htmlspecialchars($image) ?>"
+                            alt="<?= htmlspecialchars($relatedWatch['brand'] . ' ' . $relatedWatch['model_name']) ?>" loading="lazy">
+
+                        <div class="related-card-content">
+                            <p class="related-card-brand">
+                                <?= htmlspecialchars($relatedWatch['brand']) ?>
+                            </p>
+
+                            <h3 class="related-card-title">
+                                <?= htmlspecialchars($relatedWatch['model_name']) ?>
+                            </h3>
+
+                            <p class="related-card-movement">
+                                <?= htmlspecialchars(ucfirst($relatedWatch['movement_type'])) ?>
+                            </p>
+                        </div>
+                    </a>
+
+                <?php endwhile; ?>
+            </div>
+
+            <button type="button" class="carousel-btn carousel-btn-right" aria-label="Next watches">&#10095;</button>
+        </div>
     </div>
 
     <script src="../assets/js/related.js"></script>

@@ -1,7 +1,7 @@
 <?php
 require_once 'config/connection.php';
 require_once 'watch/search.php';
-require_once 'includes/sidebar.php';
+require_once 'includes/sidebar-data.php';
 require_once 'config/app.php';
 
 $quickLinks = require_once 'config/quick-links.php';
@@ -82,115 +82,125 @@ if (empty($watchIds)) {
 include 'includes/header.php';
 ?>
 
-<main>
-    <!-- Hero -->
-    <section id="hero">
-        <h1>Find Your Perfect Budget Watch</h1>
-        <p>Explore budget watches, compare specifications, and find the best available prices.</p>
+<main class="site-main">
+    <section class="page-hero">
+        <div class="site-container">
+            <h1>Find Your Perfect Budget Watch</h1>
+            <p>Explore budget watches, compare specifications, and find the best available prices.</p>
+        </div>
     </section>
 
-    <div class="page-layout">
-        <!-- Catalog -->
-        <section id="watch-list">
-            <div class="catalog-toolbar">
-                <h2>Available Watches</h2>
+    <div class="site-container">
+        <div class="catalog-layout">
+            <?php require_once 'includes/sidebar.php'; ?>
 
-                <form action="index.php" method="GET" class="sort-form">
-                    <!-- Preserve the current search and filter state by copying existing GET parameters into hidden inputs, excluding the sort parameter -->
-                    <?php
-                    foreach ($_GET as $key => $value) {
-                        // Skip the current sort parameter so the selected value replaces it
-                        if ($key === 'sort') {
-                            continue;
-                        }
+            <section class="watch-catalog">
+                <div class="catalog-toolbar">
+                    <h2>Available Watches</h2>
 
-                        // Check whether the parameter is an array
-                        if (is_array($value)) {
-                            foreach ($value as $item) {
-                                ?>
-                                <input type="hidden" name="<?= htmlspecialchars($key) ?>[]" value="<?= htmlspecialchars($item) ?>">
-                                <?php
-                            }
-                        } else {
-                            ?>
-                            <input type="hidden" name="<?= htmlspecialchars($key) ?>" value="<?= htmlspecialchars($value) ?>">
-                            <?php
-                        }
-                    }
-                    ?>
-
-                    <label for="sort">Sort By</label>
-
-                    <select id="sort" name="sort" onchange="this.form.submit()">
-                        <option value="featured" <?= $sort === 'featured' ? 'selected' : '' ?>>Featured First</option>
-                        <option value="price_low" <?= $sort === 'price_low' ? 'selected' : '' ?>>Price: Low to High</option>
-                        <option value="price_high" <?= $sort === 'price_high' ? 'selected' : '' ?>>Price: High to Low</option>
-                    </select>
-                </form>
-            </div>
-
-            <div class="watch-grid">
-                <?php if ($watchResult && $watchResult->num_rows > 0): ?>
-                    <!-- Display the matching watches -->
-                    <?php while ($watch = $watchResult->fetch_assoc()): ?>
-
+                    <form action="index.php" method="GET" class="sort-form">
+                        <!-- Preserve the current search and filter state by copying existing GET parameters into hidden inputs, excluding the sort parameter -->
                         <?php
-                        $imagePath = DEFAULT_WATCH_IMAGE;
+                        foreach ($_GET as $key => $value) {
+                            // Skip the current sort parameter so the selected value replaces it
+                            if ($key === 'sort') {
+                                continue;
+                            }
 
-                        if (!empty($watch['image_folder'])) {
-                            for ($i = 1; $i <= MAX_WATCH_IMAGES; $i++) {
-                                $relativeFile = sprintf('%s/%d.webp', $watch['image_folder'], $i);
-
-                                if (file_exists(WATCH_IMAGE_DIR . '/' . $relativeFile)) {
-                                    $imagePath = WATCH_IMAGE_URL . '/' . $relativeFile;
-                                    break;
+                            // Check whether the parameter is an array
+                            if (is_array($value)) {
+                                foreach ($value as $item) {
+                                    ?>
+                                    <input type="hidden" name="<?= htmlspecialchars($key) ?>[]"
+                                        value="<?= htmlspecialchars($item) ?>">
+                                    <?php
                                 }
+                            } else {
+                                ?>
+                                <input type="hidden" name="<?= htmlspecialchars($key) ?>"
+                                    value="<?= htmlspecialchars($value) ?>">
+                                <?php
                             }
                         }
                         ?>
 
-                        <article class="watch-card">
-                            <a href="<?= BASE_URL ?>/watch/details.php?id=<?= $watch['id'] ?>">
-                                <?php
-                                $imagePath = DEFAULT_WATCH_IMAGE;
+                        <label for="sort">Sort By</label>
 
-                                if (!empty($watch['default_image_folder'])) {
-                                    $imagePath = WATCH_IMAGE_URL . '/' . $watch['default_image_folder'] . '/1.webp';
+                        <select id="sort" name="sort" onchange="this.form.submit()">
+                            <option value="featured" <?= $sort === 'featured' ? 'selected' : '' ?>>Featured First</option>
+                            <option value="price_low" <?= $sort === 'price_low' ? 'selected' : '' ?>>Price: Low to High</option>
+                            <option value="price_high" <?= $sort === 'price_high' ? 'selected' : '' ?>>Price: High to Low</option>
+                        </select>
+                    </form>
+                </div>
+
+                <div class="watch-grid">
+                    <?php if ($watchResult && $watchResult->num_rows > 0): ?>
+                        <!-- Display the matching watches -->
+                        <?php while ($watch = $watchResult->fetch_assoc()): ?>
+
+                            <?php
+                            $imagePath = DEFAULT_WATCH_IMAGE;
+
+                            if (!empty($watch['image_folder'])) {
+                                for ($i = 1; $i <= MAX_WATCH_IMAGES; $i++) {
+                                    $relativeFile = sprintf('%s/%d.webp', $watch['image_folder'], $i);
+
+                                    if (file_exists(WATCH_IMAGE_DIR . '/' . $relativeFile)) {
+                                        $imagePath = WATCH_IMAGE_URL . '/' . $relativeFile;
+                                        break;
+                                    }
                                 }
-                                ?>
-                                <img src="<?= htmlspecialchars($imagePath) ?>"
-                                    alt="<?= htmlspecialchars($watch['brand'] . ' ' . $watch['model_name']) ?>" loading="lazy"
-                                    onerror="this.onerror=null;this.src='<?= htmlspecialchars(DEFAULT_WATCH_IMAGE) ?>';">
+                            }
+                            ?>
 
-                                <?php if ($watch['is_featured']): ?>
-                                    <p><?= FEATURED_LABEL ?></p>
-                                <?php endif; ?>
+                            <article class="watch-card">
+                                <a class="watch-card-link" href="<?= BASE_URL ?>/watch/details.php?id=<?= $watch['id'] ?>">
+                                    <?php
+                                    $imagePath = DEFAULT_WATCH_IMAGE;
 
-                                <h3><?= htmlspecialchars($watch['brand']) ?></h3>
-                                <h4><?= htmlspecialchars($watch['model_name']) ?></h4>
+                                    if (!empty($watch['default_image_folder'])) {
+                                        $imagePath = WATCH_IMAGE_URL . '/' . $watch['default_image_folder'] . '/1.webp';
+                                    }
+                                    ?>
+                                    <img src="<?= htmlspecialchars($imagePath) ?>"
+                                        alt="<?= htmlspecialchars($watch['brand'] . ' ' . $watch['model_name']) ?>" loading="lazy"
+                                        onerror="this.onerror=null;this.src='<?= htmlspecialchars(DEFAULT_WATCH_IMAGE) ?>';">
 
-                                <?php if ($watch['owner_status'] === OWNER_STATUS_OWNED): ?>
-                                    <p><?= OWNER_COLLECTION_LABEL ?></p>
-                                <?php elseif ($watch['owner_status'] === OWNER_STATUS_INTERESTED): ?>
-                                    <p><?= OWNER_WISHLIST_LABEL ?></p>
-                                <?php endif; ?>
+                                    <?php if ($watch['is_featured']): ?>
+                                        <p><?= FEATURED_LABEL ?></p>
+                                    <?php endif; ?>
 
-                                <?php if ($watch['min_price'] !== null && $watch['min_price'] > 0): ?>
-                                    <p>From ₹<?= number_format($watch['min_price']) ?></p>
-                                <?php else: ?>
-                                    <p>Currently unavailable to buy</p>
-                                <?php endif; ?>
-                            </a>
-                            <button type="button"
-                                onclick="window.location.href='<?= BASE_URL ?>/watch/details.php?id=<?= $watch['id'] ?>'">Buying Options</button>
-                        </article>
-                    <?php endwhile; ?>
+                                    <h3><?= htmlspecialchars($watch['brand']) ?></h3>
+                                    <h4><?= htmlspecialchars($watch['model_name']) ?></h4>
 
-                <?php else: ?>
-                    <p>No watches available.</p>
-                <?php endif; ?>
-            </div>
-        </section>
+                                    <?php if ($watch['owner_status'] === OWNER_STATUS_OWNED): ?>
+                                        <p><?= OWNER_COLLECTION_LABEL ?></p>
+                                    <?php elseif ($watch['owner_status'] === OWNER_STATUS_INTERESTED): ?>
+                                        <p><?= OWNER_WISHLIST_LABEL ?></p>
+                                    <?php endif; ?>
+
+                                    <?php if ($watch['min_price'] !== null && $watch['min_price'] > 0): ?>
+                                        <p>From ₹<?= number_format($watch['min_price']) ?></p>
+                                    <?php else: ?>
+                                        <p>Currently unavailable to buy</p>
+                                    <?php endif; ?>
+                                </a>
+
+                                <button type="button"
+                                    onclick="window.location.href='<?= BASE_URL ?>/watch/details.php?id=<?= $watch['id'] ?>'">
+                                    Buying Options</button>
+                            </article>
+                        <?php endwhile; ?>
+
+                    <?php else: ?>
+                        <div class="empty-state">
+                            <p>No watches available.</p>
+                        </div>
+                    <?php endif; ?>
+                </div>
+            </section>
+        </div>
     </div>
 </main>
 

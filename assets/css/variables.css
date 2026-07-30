@@ -1,0 +1,80 @@
+:root {
+  --content-width: 1000px;
+
+  /* TYPOGRAPHY */
+  --font-family: "Poppins", sans-serif;
+
+  --font-size-xs: 0.75rem; /* 12px */
+  --font-size-sm: 0.875rem; /* 14px */
+  --font-size-md: 1rem; /* 16px */
+  --font-size-lg: 1.125rem; /* 18px */
+  --font-size-xl: 1.5rem; /* 24px */
+  --font-size-xxl: 2rem; /* 32px */
+
+  --font-weight-light: 300;
+  --font-weight-regular: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+
+  --line-height: 1.6;
+
+  /* PRIMARY PALETTE */
+  --color-primary: #242423;
+  --color-secondary: #333533;
+
+  --color-background: #ede0d4;
+  --color-surface: #e6ccb2;
+  --color-highlight: #dc9752;
+
+  /* CARDS */
+  --color-card: #f8f3ee;
+  --color-card-content: #e6ccb2;
+  --color-brand: #7f5539;
+
+  /* ACCENT PALETTE */
+  --color-accent: #b08968;
+  --color-accent-hover: #9c6644;
+  --color-accent-light: #ddb892;
+
+  /* TEXT */
+  --color-text: #242423;
+  --color-text-light: #555555;
+  --color-text-inverse: #f8f5f2;
+
+  /* BORDER */
+  --color-border: #d2b79b;
+
+  /* FEEDBACK */
+  --color-success: #588157;
+  --color-warning: #e9b949;
+  --color-error: #d95d39;
+  --color-info: var(--color-accent);
+
+  /* SPACING */
+  --space-xs: 0.25rem;
+  --space-sm: 0.5rem;
+  --space-md: 1rem;
+  --space-lg: 1.5rem;
+  --space-xl: 2rem;
+  --space-xxl: 3rem;
+
+  /* LAYOUT */
+  --container-width: 1200;
+  --header-height: 70px;
+
+  /* BORDER RADIUS */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 20px;
+  --radius-pill: 9999px;
+
+  /* SHADOWS */
+  --shadow-sm: 0 2px 6px rgba(36, 36, 35, 0.08);
+  --shadow-md: 0 6px 18px rgba(36, 36, 35, 0.12);
+  --shadow-lg: 0 12px 30px rgba(36, 36, 35, 0.18);
+
+  /* TRANSITIONS */
+  --transition: 0.25s ease-in-out;
+}

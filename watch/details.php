@@ -157,183 +157,208 @@ foreach ($variants as $variant) {
 include '../includes/header.php';
 ?>
 
-<main>
-    <!-- Breadcrumb -->
-    <nav class="breadcrumb" aria-label="Breadcrumb">
-        <a href="../index.php">Home</a>
-        <span>&gt;</span>
+<main class="site-main">
+    <div class="site-container">
+        <!-- Breadcrumb -->
+        <nav class="product-breadcrumb" aria-label="Breadcrumb">
+            <a href="../index.php">Home</a>
+            <span>&gt;</span>
 
-        <a href="../index.php?brand[]=<?= urlencode($watch['brand']) ?>"><?= htmlspecialchars($watch['brand']) ?></a>
-        <span>&gt;</span>
+            <a href="../index.php?brand[]=<?= urlencode($watch['brand']) ?>"><?= htmlspecialchars($watch['brand']) ?></a>
+            <span>&gt;</span>
 
-        <span><?= htmlspecialchars($watch['model_name']) ?></span>
-    </nav>
+            <span><?= htmlspecialchars($watch['model_name']) ?></span>
+        </nav>
 
-    <section class="product-page">
-        <!-- Product Images -->
-        <div class="product-image">
-            <button type="button" class="prev-image">&#10094;</button>
-            <img id="main-image" src="<?= htmlspecialchars($images[0]) ?>"
-                alt="<?= htmlspecialchars($watch['brand'] . ' ' . $watch['model_name'] . ' Watch') ?>" loading="lazy">
-            <button type="button" class="next-image">&#10095;</button>
-        </div>
-
-        <!-- Product Information -->
-        <div class="product-details">
-            <h1><?= htmlspecialchars($watch['brand']) ?></h1>
-            <h2><?= htmlspecialchars($watch['model_name']) ?></h2>
-
-            <?php if ($watch['is_featured']): ?>
-                <p><?= FEATURED_LABEL ?></p>
-            <?php endif; ?>
-
-            <?php if ($watch['owner_status'] === OWNER_STATUS_OWNED): ?>
-                <p><?= OWNER_COLLECTION_LABEL ?></p>
-            <?php elseif ($watch['owner_status'] === OWNER_STATUS_INTERESTED): ?>
-                <p><?= OWNER_WISHLIST_LABEL ?></p>
-            <?php endif; ?>
-
-            <p><?= ucfirst($watch['gender']) ?></p>
-
-            <!-- Top Highlights -->
-            <div class="top-highlights">
-                <h3>Top Highlights</h3>
-
-                <!-- Case Diameter -->
-                <?php if (!empty($watch['case_diameter_mm'])): ?>
-                    <div class="highlight-item">
-                        <span>Case Diameter</span>
-                        <strong><?= $watch['case_diameter_mm'] ?> mm</strong>
-                    </div>
-                <?php endif; ?>
-
-                <!-- Case Material -->
-                <?php if (!empty($watch['case_material'])): ?>
-                    <div class="highlight-item">
-                        <span>Case Material</span>
-                        <strong><?= htmlspecialchars($watch['case_material']) ?></strong>
-                    </div>
-                <?php endif; ?>
-
-                <!-- Warranty -->
-                <?php if (!empty($watch['warranty_years'])): ?>
-                    <div class="highlight-item">
-                        <span>Warranty</span>
-                        <strong><?= $watch['warranty_years'] ?> Years</strong>
-                    </div>
-                <?php endif; ?>
-
-                <!-- Movement -->
-                <?php if (!empty($watch['movement_type'])): ?>
-                    <div class="highlight-item">
-                        <span>Movement</span>
-                        <strong><?= ucfirst($watch['movement_type']) ?></strong>
-                    </div>
-                <?php endif; ?>
-
-                <!-- Display -->
-                <?php if (!empty($watch['display_type'])): ?>
-                    <div class="highlight-item">
-                        <span>Display</span>
-                        <strong><?= ucfirst($watch['display_type']) ?></strong>
-                    </div>
-                <?php endif; ?>
-
-                <!-- Water Resistance -->
-                <?php if (!empty($watch['water_resistance_atm'])): ?>
-                    <div class="highlight-item">
-                        <span>Water Resistance</span>
-                        <strong><?= $watch['water_resistance_atm'] ?> ATM</strong>
-                    </div>
-                <?php endif; ?>
+        <section class="product-page">
+            <!-- Product Images -->
+            <div class="product-gallery">
+                <button type="button" class="gallery-prev">&#10094;</button>
+                <img id="main-image" class="product-main-image" src="<?= htmlspecialchars($images[0]) ?>"
+                    alt="<?= htmlspecialchars($watch['brand'] . ' ' . $watch['model_name'] . ' Watch') ?>" loading="lazy">
+                <button type="button" class="gallery-next">&#10095;</button>
             </div>
 
-            <!-- Buying Options -->
-            <div class="buying-options">
-                <h3>Buying Options</h3>
+            <!-- Product Information -->
+            <div class="product-details">
+                <p class="product-brand"><?= htmlspecialchars($watch['brand']) ?></p>
+                <h1 class="product-title"><?= htmlspecialchars($watch['model_name']) ?></h1>
 
-                <div id="buying-options-content">
-                    <?php if ($bestRetailer): ?>
+                <!-- Featured Status -->
+                <?php if ($watch['is_featured']): ?>
+                    <p class="product-badge featured"><?= FEATURED_LABEL ?></p>
+                <?php endif; ?>
 
-                        <div class="best-price">
-                            <p class="best-price-text">Available at
-                                <a href="<?= htmlspecialchars($bestRetailer['affiliate_url'] ?: $bestRetailer['base_url']) ?>"
-                                    target="_blank" rel="noopener noreferrer" class="retailer-link">
-                                    <?= htmlspecialchars($bestRetailer['retailer_name']) ?>
-                                </a>
-                                for
-                                <strong>₹<?= number_format($bestRetailer['price'], 0) ?></strong>
+                <!-- Owner Status -->
+                <?php if ($watch['owner_status'] === OWNER_STATUS_OWNED): ?>
+                    <p class="product-badge owned"><?= OWNER_COLLECTION_LABEL ?></p>
+                <?php elseif ($watch['owner_status'] === OWNER_STATUS_INTERESTED): ?>
+                    <p class="product-badge wishlist"><?= OWNER_WISHLIST_LABEL ?></p>
+                <?php endif; ?>
 
-                                <?php if ($discountAmount > 0): ?>
-                                    <span class="mrp">
-                                        <del>₹<?= number_format($watch['mrp'], 0) ?></del>
-                                    </span>
-                                    <span class="discount-badge"><?= $discountPercent ?>% off</span>
-                                <?php endif; ?>
-                            </p>
+                <!-- Gender -->
+                <p class="product-gender">
+                    <?php
+                    switch (strtolower($watch['gender'])) {
+                        case 'men':
+                            echo "Men's Watch";
+                            break;
+
+                        case 'women':
+                            echo "Women's Watch";
+                            break;
+
+                        case 'unisex':
+                            echo "Unisex Watch";
+                            break;
+
+                        default:
+                            echo ucfirst($watch['gender']) . " Watch";
+                    }
+                    ?>
+                </p>
+
+                <!-- Top Highlights -->
+                <div class="top-highlights">
+                    <h3>Top Highlights</h3>
+
+                    <!-- Case Diameter -->
+                    <?php if (!empty($watch['case_diameter_mm'])): ?>
+                        <div class="highlight-item">
+                            <span>Case Diameter</span>
+                            <strong><?= $watch['case_diameter_mm'] ?> mm</strong>
                         </div>
+                    <?php endif; ?>
 
-                        <?php if (count($currentRetailers) > 1): ?>
-                            <div class="other-retailers">
-                                <h4>Other Buying Options</h4>
+                    <!-- Case Material -->
+                    <?php if (!empty($watch['case_material'])): ?>
+                        <div class="highlight-item">
+                            <span>Case Material</span>
+                            <strong><?= htmlspecialchars($watch['case_material']) ?></strong>
+                        </div>
+                    <?php endif; ?>
 
-                                <?php
-                                $otherRetailers = array_filter($currentRetailers, function ($retailer) use ($bestRetailer) {
-                                    return $retailer['id'] != $bestRetailer['id']
-                                        && $retailer['is_available']
-                                        && $retailer['price'] !== null
-                                        && (!empty($retailer['base_url']) || !empty($retailer['affiliate_url']));
-                                });
+                    <!-- Warranty -->
+                    <?php if (!empty($watch['warranty_years'])): ?>
+                        <div class="highlight-item">
+                            <span>Warranty</span>
+                            <strong><?= $watch['warranty_years'] ?> Years</strong>
+                        </div>
+                    <?php endif; ?>
 
-                                usort($otherRetailers, function ($a, $b) {
-                                    return ($a['price'] ?? PHP_FLOAT_MAX) <=> ($b['price'] ?? PHP_FLOAT_MAX);
-                                });
+                    <!-- Movement -->
+                    <?php if (!empty($watch['movement_type'])): ?>
+                        <div class="highlight-item">
+                            <span>Movement</span>
+                            <strong><?= ucfirst($watch['movement_type']) ?></strong>
+                        </div>
+                    <?php endif; ?>
 
-                                foreach ($otherRetailers as $retailer):
-                                    ?>
-                                    <div class="retailer-row">
-                                        <a href="<?= htmlspecialchars($retailer['affiliate_url'] ?: $retailer['base_url']) ?>"
-                                            target="_blank" rel="noopener noreferrer" class="retailer-link">
-                                            <?= htmlspecialchars($retailer['retailer_name']) ?>
-                                        </a>
+                    <!-- Display -->
+                    <?php if (!empty($watch['display_type'])): ?>
+                        <div class="highlight-item">
+                            <span>Display</span>
+                            <strong><?= ucfirst($watch['display_type']) ?></strong>
+                        </div>
+                    <?php endif; ?>
 
-                                        <?php if ($retailer['price'] !== null): ?>
-                                            <span class="retailer-price">₹<?= number_format($retailer['price'], 0) ?></span>
-                                        <?php endif; ?>
-                                    </div>
-
-                                <?php endforeach; ?>
-                            </div>
-
-                        <?php endif; ?>
-
-                    <?php else: ?>
-                        <p class="no-buy-options">This watch is currently unavailable to buy online.</p>
+                    <!-- Water Resistance -->
+                    <?php if (!empty($watch['water_resistance_atm'])): ?>
+                        <div class="highlight-item">
+                            <span>Water Resistance</span>
+                            <strong><?= $watch['water_resistance_atm'] ?> ATM</strong>
+                        </div>
                     <?php endif; ?>
                 </div>
-            </div>
 
-            <?php if (!empty($colorVariants)): ?>
-                <!-- Available Colors -->
-                <div class="product-colors">
-                    <h3>Available Colors</h3>
+                <!-- Buying Options -->
+                <div class="buying-options">
+                    <h3>Buying Options</h3>
 
-                    <?php foreach ($colorVariants as $variant):
-                        $color = ucwords(strtolower($variant['color_name']));
-                        $swatchColor = $COLOR_MAP[$color] ?? '#555555';
-                        ?>
+                    <div id="buying-options-content">
+                        <?php if ($bestRetailer): ?>
 
-                        <button type="button" class="color-item <?= $variant['is_default'] ? 'active' : '' ?>"
-                            data-variant-id="<?= $variant['id'] ?>"
-                            data-color="<?= htmlspecialchars(strtolower(trim($variant['color_name']))) ?>">
+                            <div class="best-offer">
+                                <p class="best-offer-text">Available at
+                                    <a href="<?= htmlspecialchars($bestRetailer['affiliate_url'] ?: $bestRetailer['base_url']) ?>"
+                                        target="_blank" rel="noopener noreferrer" class="retailer-link">
+                                        <?= htmlspecialchars($bestRetailer['retailer_name']) ?>
+                                    </a>
+                                    for
+                                    <strong>₹<?= number_format($bestRetailer['price'], 0) ?></strong>
 
-                            <span class="color-circle" style="background-color: <?= htmlspecialchars($swatchColor) ?>"></span>
-                            <span><?= htmlspecialchars($color) ?></span>
-                        </button>
-                    <?php endforeach; ?>
+                                    <?php if ($discountAmount > 0): ?>
+                                        <span class="mrp">
+                                            <del>₹<?= number_format($watch['mrp'], 0) ?></del>
+                                        </span>
+                                        <span class="discount-badge"><?= $discountPercent ?>% off</span>
+                                    <?php endif; ?>
+                                </p>
+                            </div>
+
+                            <?php if (count($currentRetailers) > 1): ?>
+                                <div class="other-retailers">
+                                    <h4>Other Buying Options</h4>
+
+                                    <?php
+                                    $otherRetailers = array_filter($currentRetailers, function ($retailer) use ($bestRetailer) {
+                                        return $retailer['id'] != $bestRetailer['id']
+                                            && $retailer['is_available']
+                                            && $retailer['price'] !== null
+                                            && (!empty($retailer['base_url']) || !empty($retailer['affiliate_url']));
+                                    });
+
+                                    usort($otherRetailers, function ($a, $b) {
+                                        return ($a['price'] ?? PHP_FLOAT_MAX) <=> ($b['price'] ?? PHP_FLOAT_MAX);
+                                    });
+
+                                    foreach ($otherRetailers as $retailer):
+                                        ?>
+                                        <div class="retailer-row">
+                                            <a href="<?= htmlspecialchars($retailer['affiliate_url'] ?: $retailer['base_url']) ?>"
+                                                target="_blank" rel="noopener noreferrer" class="retailer-link">
+                                                <?= htmlspecialchars($retailer['retailer_name']) ?>
+                                                <span aria-hidden="true">&#8599;</span>
+                                            </a>
+
+                                            <?php if ($retailer['price'] !== null): ?>
+                                                <span class="retailer-price">₹<?= number_format($retailer['price'], 0) ?></span>
+                                            <?php endif; ?>
+                                        </div>
+
+                                    <?php endforeach; ?>
+
+                                </div>
+                            <?php endif; ?>
+
+                        <?php else: ?>
+                            <p class="no-buy-options">This watch is currently unavailable to buy online.</p>
+                        <?php endif; ?>
+                    </div>
                 </div>
-            <?php endif; ?>
-        </div>
+
+                <?php if (!empty($colorVariants)): ?>
+                    <!-- Available Colors -->
+                    <div class="product-colors">
+                        <h3>Available Colors</h3>
+
+                        <?php foreach ($colorVariants as $variant):
+                            $color = ucwords(strtolower($variant['color_name']));
+                            $watchColor = $COLOR_MAP[$color] ?? '#555555';
+                            ?>
+
+                            <button type="button" class="color-item <?= $variant['is_default'] ? 'active' : '' ?>"
+                                data-variant-id="<?= $variant['id'] ?>"
+                                data-color="<?= htmlspecialchars(strtolower(trim($variant['color_name']))) ?>">
+
+                                <span class="color-circle" style="background-color: <?= htmlspecialchars($watchColor) ?>"></span>
+                                <span><?= htmlspecialchars($color) ?></span>
+                            </button>
+                        <?php endforeach; ?>
+                    </div>
+                <?php endif; ?>
+            </div>
+        </section>
 
         <!-- Product Data for JavaScript -->
         <script>
@@ -354,7 +379,7 @@ include '../includes/header.php';
         </script>
 
         <script src="<?= BASE_URL ?>/assets/js/details.js"></script>
-    </section>
+    </div>
 </main>
 
 <?php include 'related.php'; ?>
