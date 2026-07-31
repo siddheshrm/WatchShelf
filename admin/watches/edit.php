@@ -93,20 +93,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $stmt->bind_param("ssdssdssisssiisii", $brand, $modelName, $mrp, $gender, $caseMaterial, $caseDiameter, $bandMaterial, $movementType, $waterResistance, $displayType, $crystalType, $tags, $warrantyYears, $isFeatured, $ownerStatus, $isActive, $watchId);
 
         if ($stmt->execute()) {
-            $deleteStmt = $conn->prepare("DELETE FROM watch_variants WHERE watch_id = ?");
-            if (!$deleteStmt) {
-                die($conn->error);
-            }
-
-            $deleteStmt->bind_param("i", $watchId);
-            $deleteStmt->execute();
-            $deleteStmt->close();
-
             $retailerSql = "INSERT INTO watch_variants (watch_id, color_name, image_folder, is_default, retailer_name, retailer_type, base_url, affiliate_url, price, currency, is_available)
                                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
             $retailerStmt = $conn->prepare($retailerSql);
             if (!$retailerStmt) {
+                die($conn->error);
+            }
+
+            $updateRetailerSql = "UPDATE watch_variants SET color_name = ?, image_folder = ?, is_default = ?, retailer_name = ?, retailer_type = ?, base_url = ?, affiliate_url = ?, price = ?, currency = ?, is_available = ?, last_updated_by_scraper = 0 WHERE id = ?";
+
+            $updateRetailerStmt = $conn->prepare($updateRetailerSql);
+            if (!$updateRetailerStmt) {
                 die($conn->error);
             }
 
@@ -146,8 +144,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     mkdir($imagePath, 0755, true);
                 }
 
-                // Insert retailers
+                // Insert or Update retailers
                 foreach ($color['retailers'] as $retailer) {
+                    $variantId = !empty($retailer['id']) ? (int)$retailer['id'] : null;
+
                     $retailerName = trim($retailer['retailer_name']);
 
                     if ($retailerName === '') {
@@ -163,14 +163,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $currency = trim($retailer['currency']);
                     $isAvailable = $retailer['is_available'];
 
-                    $retailerStmt->bind_param("ississssdsi", $watchId, $colorName, $imageFolder, $isDefault, $retailerName, $retailerType, $baseUrl, $affiliateUrl, $price, $currency, $isAvailable);
+                    if ($variantId) {
+                        $updateRetailerStmt->bind_param("ssissssdsii", $colorName, $imageFolder, $isDefault, $retailerName, $retailerType, $baseUrl, $affiliateUrl, $price, $currency, $isAvailable, $variantId);
 
-                    $retailerStmt->execute();
+                        if (!$updateRetailerStmt->execute()) {
+                            die($updateRetailerStmt->error);
+                        }
+                    } else {
+                        $retailerStmt->bind_param("ississssdsi", $watchId, $colorName, $imageFolder, $isDefault, $retailerName, $retailerType, $baseUrl, $affiliateUrl, $price, $currency, $isAvailable);
+
+                        if (!$retailerStmt->execute()) {
+                            die($retailerStmt->error);
+                        }
+                    }
                 }
             }
 
             $retailerStmt->close();
-            header("Location: ../dashboard.php");
+            $updateRetailerStmt->close();
+
+            header("Location: list.php");
             // $message = "Watch updated successfully.";
             exit();
         } else {
@@ -473,6 +485,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                 ?>
 
                                     <fieldset class="retailer-block">
+                                        <input type="hidden" name="colors[<?= $colorIndex; ?>][retailers][<?= $i; ?>][id]" value="<?= htmlspecialchars($retailer['id'] ?? ''); ?>">
+
                                         <legend>Retailer <?= $i + 1; ?></legend>
 
                                         <div class="form-group">
@@ -505,7 +519,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                                 <input type="url" class="base-url" name="colors[<?= $colorIndex; ?>][retailers][<?= $i; ?>][base_url]" value="<?= htmlspecialchars($retailer['base_url'] ?? ''); ?>">
                                                 <button type="button" class="open-url" title="Open URL in a new tab" aria-label="Open URL"></button>🔗</button>
                                             </div>
-                                            
+
                                         </div>
 
                                         <div class="form-group">
