@@ -396,12 +396,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                                         <div class="form-group">
                                             <label>Base URL</label>
-                                            <input type="url" class="base-url">
+
+                                            <div class="url-input-group">
+                                                <input type="url" class="base-url">
+                                                <button type="button" class="open-url" title="Open URL in a new tab" aria-label="Open URL"></button>🔗</button>
+                                            </div>
                                         </div>
 
                                         <div class="form-group">
                                             <label>Affiliate URL</label>
-                                            <input type="url" class="affiliate-url">
+
+                                            <div class="url-input-group">
+                                                <input type="url" class="affiliate-url">
+                                                <button type="button" class="open-url" title="Open URL in a new tab" aria-label="Open URL"></button>🔗</button>
+                                            </div>
                                         </div>
 
                                         <div class="form-group">
@@ -492,12 +500,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                                         <div class="form-group">
                                             <label>Base URL</label>
-                                            <input type="url" class="base-url" name="colors[<?= $colorIndex; ?>][retailers][<?= $i; ?>][base_url]" value="<?= htmlspecialchars($retailer['base_url'] ?? ''); ?>">
+
+                                            <div class="url-input-group">
+                                                <input type="url" class="base-url" name="colors[<?= $colorIndex; ?>][retailers][<?= $i; ?>][base_url]" value="<?= htmlspecialchars($retailer['base_url'] ?? ''); ?>">
+                                                <button type="button" class="open-url" title="Open URL in a new tab" aria-label="Open URL"></button>🔗</button>
+                                            </div>
+                                            
                                         </div>
 
                                         <div class="form-group">
                                             <label>Affiliate URL</label>
-                                            <input type="url" class="affiliate-url" name="colors[<?= $colorIndex; ?>][retailers][<?= $i; ?>][affiliate_url]" value="<?= htmlspecialchars($retailer['affiliate_url'] ?? ''); ?>">
+
+                                            <div class="url-input-group">
+                                                <input type="url" class="affiliate-url" name="colors[<?= $colorIndex; ?>][retailers][<?= $i; ?>][affiliate_url]" value="<?= htmlspecialchars($retailer['affiliate_url'] ?? ''); ?>">
+                                                <button type="button" class="open-url" title="Open URL in a new tab" aria-label="Open URL"></button>🔗</button>
+                                            </div>
                                         </div>
 
                                         <div class="form-group">
@@ -536,6 +553,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </div>
 
     <script src="../../assets/js/edit.js"></script>
+    <script src="../../assets/js/watch-form-utils.js"></script>
 </body>
 
 </html>
