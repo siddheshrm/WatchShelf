@@ -64,11 +64,23 @@
   color: var(--color-text-light);
 }
 
+.filter-toggle {
+  text-align: left;
+}
+
 .filter-option input[type="checkbox"] {
   width: 1rem;
   height: 1rem;
   flex-shrink: 0;
   accent-color: var(--color-accent);
+}
+
+.filter-options .hidden-option {
+  display: none;
+}
+
+.filter-group.expanded .filter-options .hidden-option {
+  display: flex;
 }
 
 .filter-option:hover {

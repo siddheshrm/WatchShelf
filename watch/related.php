@@ -24,10 +24,13 @@ $search = preg_replace('/\s+/', ' ', $search);
 $words = array_unique(explode(' ', $search));
 
 // Select only active watches that are not the current watch, and dynamically build the query based on the extracted keywords
-$sql = "SELECT w.*, (SELECT image_folder FROM watch_variants WHERE watch_id = w.id AND is_default = 1 LIMIT 1) AS image_folder
+$sql = "SELECT w.*,
+                        (SELECT image_folder FROM watch_variants WHERE watch_id = w.id AND is_default = 1 LIMIT 1) AS image_folder,
+                        (SELECT price FROM watch_variants WHERE watch_id = w.id AND is_available = 1 AND price IS NOT NULL ORDER BY price ASC LIMIT 1) AS best_price
             FROM watches w
             WHERE w.is_active = 1
-            AND w.id != ?";
+            AND w.id != ?
+            AND EXISTS (SELECT 1 FROM watch_variants wr WHERE wr.watch_id = w.id AND wr.is_available = 1 AND wr.price IS NOT NULL)";
 
 $types = "i";
 $params = [$watch['id']];
@@ -108,20 +111,25 @@ $result = $stmt->get_result();
                     <a href="details.php?id=<?= $relatedWatch['id'] ?>" class="related-card">
 
                         <img class="related-card-image" src="<?= htmlspecialchars($image) ?>"
-                            alt="<?= htmlspecialchars($relatedWatch['brand'] . ' ' . $relatedWatch['model_name']) ?>" loading="lazy">
+                            alt="<?= htmlspecialchars($relatedWatch['brand'] . ' ' . $relatedWatch['model_name']) ?>"
+                            loading="lazy">
 
                         <div class="related-card-content">
-                            <p class="related-card-brand">
-                                <?= htmlspecialchars($relatedWatch['brand']) ?>
-                            </p>
-
                             <h3 class="related-card-title">
+                                <?= htmlspecialchars($relatedWatch['brand']) ?>
                                 <?= htmlspecialchars($relatedWatch['model_name']) ?>
                             </h3>
 
                             <p class="related-card-movement">
+                                <?= htmlspecialchars(ucfirst($relatedWatch['gender'])) ?>
                                 <?= htmlspecialchars(ucfirst($relatedWatch['movement_type'])) ?>
                             </p>
+
+                            <?php if ($relatedWatch['best_price'] !== null): ?>
+                                <p class="related-card-price">
+                                    From ₹<?= number_format($relatedWatch['best_price']) ?>
+                                </p>
+                            <?php endif; ?>
                         </div>
                     </a>
 
