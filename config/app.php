@@ -29,3 +29,6 @@ define('FEATURED_LABEL', '⭐ Featured');
 define('DEFAULT_CURRENCY', '₹');
 define('ITEMS_PER_PAGE', 32);
 define('MAX_WATCH_IMAGES', 5);
+
+// Exchange Rate API Key
+define('EXCHANGE_RATE_API_KEY', '13b2bf183d5a19701bcf3bcb');
