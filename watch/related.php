@@ -1,5 +1,6 @@
 <?php
 // This file expects $watch to be defined by the parent (details.php)
+
 /** @var array<string, mixed> $watch */
 
 require_once '../config/app.php';
@@ -7,13 +8,13 @@ require_once '../config/app.php';
 // Build a searchable keyword string from the current watch's attributes
 $search = strtolower(
     $watch['brand'] . ' ' .
-    $watch['movement_type'] . ' ' .
-    $watch['display_type'] . ' ' .
-    $watch['gender'] . ' ' .
-    $watch['case_material'] . ' ' .
-    $watch['band_material'] . ' ' .
-    $watch['crystal_type'] . ' ' .
-    $watch['tags']
+        $watch['movement_type'] . ' ' .
+        $watch['display_type'] . ' ' .
+        $watch['gender'] . ' ' .
+        $watch['case_material'] . ' ' .
+        $watch['band_material'] . ' ' .
+        $watch['crystal_type'] . ' ' .
+        $watch['tags']
 );
 
 // Normalize separators and remove duplicate whitespace before extracting keywords
@@ -109,10 +110,11 @@ $result = $stmt->get_result();
                     ?>
 
                     <a href="details.php?id=<?= $relatedWatch['id'] ?>" class="related-card">
-
-                        <img class="related-card-image" src="<?= htmlspecialchars($image) ?>"
-                            alt="<?= htmlspecialchars($relatedWatch['brand'] . ' ' . $relatedWatch['model_name']) ?>"
-                            loading="lazy">
+                        <div class="watch-image image-frame">
+                            <img class="related-card-image" src="<?= htmlspecialchars($image) ?>"
+                                alt="<?= htmlspecialchars($relatedWatch['brand'] . ' ' . $relatedWatch['model_name']) ?>"
+                                loading="lazy">
+                        </div>
 
                         <div class="related-card-content">
                             <h3 class="related-card-title">

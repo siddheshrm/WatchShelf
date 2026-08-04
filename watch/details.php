@@ -174,8 +174,12 @@ include '../includes/header.php';
             <!-- Product Images -->
             <div class="product-gallery">
                 <button type="button" class="gallery-prev">&#10094;</button>
-                <img id="main-image" class="product-main-image" src="<?= htmlspecialchars($images[0]) ?>"
-                    alt="<?= htmlspecialchars($watch['brand'] . ' ' . $watch['model_name'] . ' Watch') ?>" loading="lazy">
+
+                <div class="watch-image image-frame">
+                    <img id="main-image" class="product-main-image" src="<?= htmlspecialchars($images[0]) ?>"
+                        alt="<?= htmlspecialchars($watch['brand'] . ' ' . $watch['model_name'] . ' Watch') ?>" loading="lazy">
+                </div>
+
                 <button type="button" class="gallery-next">&#10095;</button>
             </div>
 
@@ -313,7 +317,7 @@ include '../includes/header.php';
                                     });
 
                                     foreach ($otherRetailers as $retailer):
-                                        ?>
+                                    ?>
                                         <div class="retailer-row">
                                             <a href="<?= htmlspecialchars($retailer['affiliate_url'] ?: $retailer['base_url']) ?>"
                                                 target="_blank" rel="noopener noreferrer" class="retailer-link">
@@ -345,7 +349,7 @@ include '../includes/header.php';
                         <?php foreach ($colorVariants as $variant):
                             $color = ucwords(strtolower($variant['color_name']));
                             $watchColor = $COLOR_MAP[$color] ?? '#555555';
-                            ?>
+                        ?>
 
                             <button type="button" class="color-item <?= $variant['is_default'] ? 'active' : '' ?>"
                                 data-variant-id="<?= $variant['id'] ?>"

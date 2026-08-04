@@ -110,16 +110,16 @@ include 'includes/header.php';
                             // Check whether the parameter is an array
                             if (is_array($value)) {
                                 foreach ($value as $item) {
-                                    ?>
+                        ?>
                                     <input type="hidden" name="<?= htmlspecialchars($key) ?>[]"
                                         value="<?= htmlspecialchars($item) ?>">
-                                    <?php
+                                <?php
                                 }
                             } else {
                                 ?>
                                 <input type="hidden" name="<?= htmlspecialchars($key) ?>"
                                     value="<?= htmlspecialchars($value) ?>">
-                                <?php
+                        <?php
                             }
                         }
                         ?>
@@ -163,9 +163,10 @@ include 'includes/header.php';
                                         $imagePath = WATCH_IMAGE_URL . '/' . $watch['default_image_folder'] . '/1.webp';
                                     }
                                     ?>
-                                    <img src="<?= htmlspecialchars($imagePath) ?>"
-                                        alt="<?= htmlspecialchars($watch['brand'] . ' ' . $watch['model_name']) ?>" loading="lazy"
-                                        onerror="this.onerror=null;this.src='<?= htmlspecialchars(DEFAULT_WATCH_IMAGE) ?>';">
+                                    <div class="watch-image image-frame">
+                                        <img src="<?= htmlspecialchars($imagePath) ?>"
+                                            alt="<?= htmlspecialchars($watch['brand'] . ' ' . $watch['model_name']) ?>" loading="lazy" onerror="this.onerror=null;this.src='<?= htmlspecialchars(DEFAULT_WATCH_IMAGE) ?>';">
+                                    </div>
 
                                     <?php if ($watch['is_featured']): ?>
                                         <p><?= FEATURED_LABEL ?></p>
@@ -189,7 +190,8 @@ include 'includes/header.php';
 
                                 <button type="button"
                                     onclick="window.location.href='<?= BASE_URL ?>/watch/details.php?id=<?= $watch['id'] ?>'">
-                                    Buying Options</button>
+                                    Buying Options
+                                </button>
                             </article>
                         <?php endwhile; ?>
 
