@@ -47,7 +47,7 @@ if (empty($images)) {
 }
 
 // Fetch All Variants
-$variantStmt = $conn->prepare("SELECT id, color_name, image_folder, is_default, retailer_name, retailer_type, base_url, affiliate_url, price, currency, is_available
+$variantStmt = $conn->prepare("SELECT id, color_name, last_checked, image_folder, is_default, retailer_name, retailer_type, base_url, affiliate_url, price, currency, is_available
                                                     FROM watch_variants
                                                     WHERE watch_id = ?
                                                     ORDER BY display_order ASC, id ASC;");
@@ -322,7 +322,6 @@ include '../includes/header.php';
                                             <a href="<?= htmlspecialchars($retailer['affiliate_url'] ?: $retailer['base_url']) ?>"
                                                 target="_blank" rel="noopener noreferrer" class="retailer-link">
                                                 <?= htmlspecialchars($retailer['retailer_name']) ?>
-                                                <span aria-hidden="true">&#8599;</span>
                                             </a>
 
                                             <?php if ($retailer['price'] !== null): ?>
@@ -380,6 +379,9 @@ include '../includes/header.php';
 
             // Watch MRP
             const mrp = <?= (float) $watch['mrp'] ?>;
+
+            // Selected color
+            const selectedColor = <?= json_encode($selectedColor) ?>;
         </script>
 
         <script src="<?= BASE_URL ?>/assets/js/details.js"></script>

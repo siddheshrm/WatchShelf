@@ -37,7 +37,8 @@ function updateNavigation() {
 // Buying Options
 function renderBuyingOptions(retailers) {
   if (!retailers || retailers.length === 0) {
-    buyingOptions.innerHTML = '<p class="no-buy-options">This watch is currently unavailable to buy online.</p>';
+    buyingOptions.innerHTML =
+      '<p class="no-buy-options">This watch is currently unavailable to buy online.</p>';
     return;
   }
 
@@ -47,7 +48,8 @@ function renderBuyingOptions(retailers) {
   );
 
   if (availableRetailers.length === 0) {
-    buyingOptions.innerHTML = '<p class="no-buy-options">This watch is currently unavailable to buy online.</p>';
+    buyingOptions.innerHTML =
+      '<p class="no-buy-options">This watch is currently unavailable to buy online.</p>';
     return;
   }
 
@@ -67,24 +69,34 @@ function renderBuyingOptions(retailers) {
   }
 
   let html = `
-    <div class="best-offer">
-      <p class="best-offer-text">Available at
-        <a href="${bestRetailer.affiliate_url || bestRetailer.base_url}" target="_blank" rel="noopener noreferrer" class="retailer-link">${bestRetailer.retailer_name}</a>
-        for
-        <strong>${formatPrice(bestRetailer.price)}</strong>
-  `;
+  <div class="best-offer">
+    <p class="best-offer-text">
+      Available at
+      <a href="${bestRetailer.affiliate_url || bestRetailer.base_url}"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="retailer-link">
+        ${bestRetailer.retailer_name}
+      </a>
+      for
+      <strong>${formatPrice(bestRetailer.price)}</strong>
+`;
 
   if (discountAmount > 0) {
     html += `
       <span class="mrp"><del>${formatPrice(mrp)}</del></span>
       <span class="discount-badge">${discountPercent}% off</span>
-    `;
+  `;
   }
 
   html += `
-      </p>
-    </div>
-  `;
+    </p>
+
+    <span class="retailer-last-checked">
+      ${formatTimeAgo(bestRetailer.last_checked)}
+    </span>
+  </div>
+`;
 
   if (availableRetailers.length > 1) {
     html += `
@@ -105,16 +117,64 @@ function renderBuyingOptions(retailers) {
 
       html += `
         <div class="retailer-row">
-          <a href="${retailerUrl}" target="_blank" rel="noopener noreferrer" class="retailer-link">${retailer.retailer_name}</a>
+          <div class="retailer-info">
+            <a href="${retailerUrl}" target="_blank" rel="noopener noreferrer" class="retailer-link">
+              ${retailer.retailer_name}
+            </a>
+            <span class="retailer-last-checked">${formatTimeAgo(retailer.last_checked)}</span>
+          </div>
+
           <span class="retailer-price">${formatPrice(retailer.price)}</span>
         </div>
-        `;
+      `;
     });
 
     html += `</div>`;
   }
 
   buyingOptions.innerHTML = html;
+}
+
+// Time Ago Function
+function formatTimeAgo(timestamp) {
+  if (!timestamp) {
+    return "Last checked over a week ago";
+  }
+
+  // Convert timestamp to a IST date object
+  const checkedAt = new Date(timestamp.replace(" ", "T") + "Z");
+
+  if (Number.isNaN(checkedAt.getTime())) {
+    return "Last checked over a week ago";
+  }
+
+  const now = new Date();
+
+  const seconds = Math.max(0, Math.floor((now - checkedAt) / 1000));
+
+  if (seconds < 60) {
+    return "Last checked just now";
+  }
+
+  const minutes = Math.floor(seconds / 60);
+
+  if (minutes < 60) {
+    return `Last checked ${minutes} minute${minutes !== 1 ? "s" : ""} ago`;
+  }
+
+  const hours = Math.floor(minutes / 60);
+
+  if (hours < 24) {
+    return `Last checked ${hours} hour${hours !== 1 ? "s" : ""} ago`;
+  }
+
+  const days = Math.floor(hours / 24);
+
+  if (days < 7) {
+    return `Last checked ${days} day${days !== 1 ? "s" : ""} ago`;
+  }
+
+  return "Last checked over a week ago";
 }
 
 // Helper Functions
@@ -134,6 +194,11 @@ function setActiveColor(button) {
 
 function formatPrice(price) {
   return `₹${Number(price).toLocaleString("en-IN")}`;
+}
+
+// Initial Buying Options
+if (selectedColor && variantsByColor[selectedColor]) {
+  renderBuyingOptions(variantsByColor[selectedColor]);
 }
 
 // Event Listeners
