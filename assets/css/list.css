@@ -133,3 +133,22 @@ h1 {
   background: #ffebee;
   color: #c62828;
 }
+
+/* Pagination styles */
+.pagination {
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+  margin-top: 20px;
+}
+
+.pagination a {
+  padding: 6px 10px;
+  border: 1px solid #ccc;
+  text-decoration: none;
+  color: inherit;
+}
+
+.pagination a.active {
+  font-weight: 600;
+}

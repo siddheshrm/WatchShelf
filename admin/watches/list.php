@@ -3,6 +3,29 @@ require_once '../../includes/auth.php';
 require_once '../../config/connection.php';
 require_once '../../config/app.php';
 
+// Pagination settings
+$perPage = 20;
+
+$currentPage = isset($_GET['page']) ? (int) $_GET['page'] : 1;
+$currentPage = max(1, $currentPage);
+
+// Get total number of watches
+$countSql = "SELECT COUNT(*) AS total FROM watches";
+$countResult = $conn->query($countSql);
+
+if (!$countResult) {
+    die($conn->error);
+}
+
+$totalWatches = (int) $countResult->fetch_assoc()['total'];
+$totalPages = (int) ceil($totalWatches / $perPage);
+
+if ($totalPages > 0) {
+    $currentPage = min($currentPage, $totalPages);
+}
+
+$offset = ($currentPage - 1) * $perPage;
+
 /* Fetch all watches with aggregated variant information.
    - Retrieves the default variant's image folder and color.
    - Counts the number of color options and retailer records.
@@ -13,14 +36,13 @@ $sql = "SELECT w.*, MAX(CASE WHEN wv.is_default = 1 THEN wv.image_folder END) AS
             LEFT JOIN watch_variants wv
             ON w.id = wv.watch_id
             GROUP BY w.id
-            ORDER BY w.brand, w.model_name";
+            ORDER BY w.brand, w.model_name
+            LIMIT $perPage OFFSET $offset";
 
 $result = $conn->query($sql);
 if (!$result) {
     die($conn->error);
 }
-
-$totalWatches = $result ? $result->num_rows : 0;
 ?>
 
 <!DOCTYPE html>
@@ -66,7 +88,7 @@ $totalWatches = $result ? $result->num_rows : 0;
             </tr>
 
             <?php if ($totalWatches > 0): ?>
-                <?php $srNo = 1; ?>
+                <?php $srNo = $offset + 1; ?>
 
                 <?php while ($watch = $result->fetch_assoc()): ?>
                     <tr>
@@ -141,11 +163,32 @@ $totalWatches = $result ? $result->num_rows : 0;
                 <?php endwhile; ?>
             <?php else: ?>
                 <tr>
-                    <td colspan="10">No watches found.</td>
+                    <td colspan="11">No watches found.</td>
                 </tr>
             <?php endif; ?>
 
         </table>
+
+        <?php if ($totalPages > 1): ?>
+            <div class="pagination">
+
+                <?php if ($currentPage > 1): ?>
+                    <a href="?page=<?= $currentPage - 1; ?>">Previous</a>
+                <?php endif; ?>
+
+                <?php for ($page = 1; $page <= $totalPages; $page++): ?>
+                    <a href="?page=<?= $page; ?>"
+                        class="<?= $page === $currentPage ? 'active' : ''; ?>">
+                        <?= $page; ?>
+                    </a>
+                <?php endfor; ?>
+
+                <?php if ($currentPage < $totalPages): ?>
+                    <a href="?page=<?= $currentPage + 1; ?>">Next</a>
+                <?php endif; ?>
+
+            </div>
+        <?php endif; ?>
     </div>
 </body>
 
