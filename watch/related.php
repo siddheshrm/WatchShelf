@@ -5,84 +5,78 @@
 
 require_once '../config/app.php';
 
-// Build a searchable keyword string from the current watch's attributes
-$search = strtolower(
-    $watch['brand'] . ' ' .
-        $watch['movement_type'] . ' ' .
-        $watch['display_type'] . ' ' .
-        $watch['gender'] . ' ' .
-        $watch['case_material'] . ' ' .
-        $watch['band_material'] . ' ' .
-        $watch['crystal_type'] . ' ' .
-        $watch['tags']
-);
-
-// Normalize separators and remove duplicate whitespace before extracting keywords
-$search = str_replace(['-', '_'], ' ', $search);
-$search = preg_replace('/\s+/', ' ', $search);
-
-// Split into unique keywords to avoid duplicate LIKE conditions
-$words = array_unique(explode(' ', $search));
-
-// Select only active watches that are not the current watch, and dynamically build the query based on the extracted keywords
+// Select active watches that are not the current watch and have at least one currently available retailer offer.
 $sql = "SELECT w.*,
-                        (SELECT image_folder FROM watch_variants WHERE watch_id = w.id AND is_default = 1 LIMIT 1) AS image_folder,
-                        (SELECT price FROM watch_variants WHERE watch_id = w.id AND is_available = 1 AND price IS NOT NULL ORDER BY price ASC LIMIT 1) AS best_price
-            FROM watches w
-            WHERE w.is_active = 1
-            AND w.id != ?
-            AND EXISTS (SELECT 1 FROM watch_variants wr WHERE wr.watch_id = w.id AND wr.is_available = 1 AND wr.price IS NOT NULL)";
-
-$types = "i";
-$params = [$watch['id']];
-
-$sql .= " AND (";
-
-// Tracks whether the next search condition is the first one being added
-$isFirstCondition = true;
-
-// Dynamically build the search query using each extracted keyword
-foreach ($words as $word) {
-    $word = trim($word);
-
-    if ($word === '') {
-        continue;
-    }
-
-    $keyword = '%' . $word . '%';
-
-    if (!$isFirstCondition) {
-        $sql .= " OR ";
-    }
-
-    $sql .= "(
-        LOWER(w.brand) LIKE ?
-        OR LOWER(w.model_name) LIKE ?
-        OR LOWER(w.gender) LIKE ?
-        OR LOWER(w.case_material) LIKE ?
-        OR LOWER(w.band_material) LIKE ?
-        OR LOWER(w.movement_type) LIKE ?
-        OR LOWER(w.display_type) LIKE ?
-        OR LOWER(w.crystal_type) LIKE ?
-        OR LOWER(w.tags) LIKE ?
-    )";
-
-    for ($i = 0; $i < 9; $i++) {
-        $types .= "s";
-        $params[] = $keyword;
-    }
-
-    $isFirstCondition = false;
-}
-
-$sql .= ") LIMIT 20";
+            (
+                SELECT image_folder
+                FROM watch_variants
+                WHERE watch_id = w.id
+                AND is_default = 1
+                LIMIT 1
+            ) AS image_folder,
+            (
+                SELECT price
+                FROM watch_variants
+                WHERE watch_id = w.id
+                AND is_available = 1
+                AND price IS NOT NULL
+                ORDER BY price ASC
+                LIMIT 1
+            ) AS best_price,
+            (
+                CASE
+                    WHEN LOWER(w.brand) = LOWER(?) THEN 50
+                    ELSE 0
+                END
+                +
+                CASE
+                    WHEN LOWER(w.gender) = LOWER(?) THEN 20
+                    ELSE 0
+                END
+                +
+                CASE
+                    WHEN LOWER(w.movement_type) = LOWER(?) THEN 15
+                    ELSE 0
+                END
+                +
+                CASE
+                    WHEN LOWER(w.display_type) = LOWER(?) THEN 10
+                    ELSE 0
+                END
+                +
+                CASE
+                    WHEN LOWER(w.case_material) = LOWER(?) THEN 5
+                    ELSE 0
+                END
+            ) AS relevance_score
+        FROM watches w
+        WHERE w.is_active = 1
+        AND w.id != ?
+        AND EXISTS (
+            SELECT 1
+            FROM watch_variants wr
+            WHERE wr.watch_id = w.id
+            AND wr.is_available = 1
+            AND wr.price IS NOT NULL
+        )
+        ORDER BY relevance_score DESC, w.id DESC
+        LIMIT 20";
 
 $stmt = $conn->prepare($sql);
-$stmt->bind_param($types, ...$params);
+
+$stmt->bind_param(
+    "sssss" . "i",
+    $watch['brand'],
+    $watch['gender'],
+    $watch['movement_type'],
+    $watch['display_type'],
+    $watch['case_material'],
+    $watch['id']
+);
 
 $stmt->execute();
-$result = $stmt->get_result();
-?>
+
+$result = $stmt->get_result(); ?>
 
 <section class="related-watches">
     <div class="site-container">
@@ -109,7 +103,9 @@ $result = $stmt->get_result();
                     }
                     ?>
 
-                    <a href="details.php?id=<?= $relatedWatch['id'] ?>" class="related-card">
+                    <a href="<?= BASE_URL ?>/watch/details.php?id=<?= (int) $relatedWatch['id'] ?>"
+                        class="related-card"
+                        title="View <?= htmlspecialchars($relatedWatch['brand'] . ' ' . $relatedWatch['model_name']) ?>">
                         <div class="watch-image image-frame">
                             <img class="related-card-image" src="<?= htmlspecialchars($image) ?>"
                                 alt="<?= htmlspecialchars($relatedWatch['brand'] . ' ' . $relatedWatch['model_name']) ?>"

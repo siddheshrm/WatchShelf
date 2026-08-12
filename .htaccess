@@ -1,0 +1,43 @@
+RewriteEngine On
+
+# --------------------------------------------------
+# Production URL normalization
+# --------------------------------------------------
+
+# Redirect www.watchshelf.in to watchshelf.in
+
+RewriteCond %{HTTP_HOST} ^www\.watchshelf\.in$ [NC]
+RewriteRule ^(.*)$ https://watchshelf.in/$1 [R=301,L]
+
+# Redirect HTTP to HTTPS
+
+RewriteCond %{HTTPS} !=on
+RewriteCond %{HTTP_HOST} ^(www\.)?watchshelf\.in$ [NC]
+RewriteRule ^(.*)$ https://watchshelf.in/$1 [R=301,L]
+
+# Redirect /index.php to /
+# Preserve query parameters such as ?quick_link=...
+
+RewriteCond %{THE_REQUEST} \s/+index\.php(?:[?\s]) [NC]
+RewriteRule ^index\.php$ / [R=301,L]
+
+# --------------------------------------------------
+# Sitemap
+# --------------------------------------------------
+
+# Redirect direct access to sitemap.xml.php to the public sitemap URL.
+
+RewriteCond %{THE_REQUEST} \s/+sitemap\.xml\.php(?:[?\s]) [NC]
+RewriteRule ^sitemap\.xml\.php$ /sitemap.xml [R=301,L]
+
+# Internally serve sitemap.xml.php when sitemap.xml is requested.
+
+RewriteRule ^sitemap\.xml$ sitemap.xml.php [L]
+
+# --------------------------------------------------
+# Do not rewrite existing files/directories
+# --------------------------------------------------
+
+RewriteCond %{REQUEST_FILENAME} -f [OR]
+RewriteCond %{REQUEST_FILENAME} -d
+RewriteRule ^ - [L]

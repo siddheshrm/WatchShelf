@@ -7,6 +7,10 @@ define('CONTACT_EMAIL', 'support@watchshelf.in');
 define('BASE_URL', '/WatchShelf');      // Local
 // define('BASE_URL', '');              // Production
 
+// Site URL used for canonical URLs, sitemap, Open Graph, structured data, etc.
+define('SITE_URL', 'http://localhost/WatchShelf');       // Local
+// define('SITE_URL', 'https://watchshelf.in');          // Production
+
 // Assets
 define('CSS_URL', BASE_URL . '/assets/css');
 define('JS_URL', BASE_URL . '/assets/js');

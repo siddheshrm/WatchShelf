@@ -1,5 +1,7 @@
 <?php
 $page_title = 'About';
+$page_canonical = SITE_URL . '/about.php';
+
 include 'includes/header.php';
 ?>
 
@@ -18,7 +20,7 @@ include 'includes/header.php';
                 popular brands and trusted retailers.</p>
 
             <p>We bring together specifications, buying options, and curated recommendations in one place, making it
-                easier to find a watch that suits your style and budget.</p>
+                easier to <a href="<?= BASE_URL ?>/">find a watch that suits your style and budget</a>.</p>
 
             <h2>What You'll Find</h2>
             <ul>

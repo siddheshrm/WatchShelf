@@ -1,5 +1,7 @@
 <?php
 $page_title = 'Contact';
+$page_canonical = SITE_URL . '/contact.php';
+
 include 'includes/header.php';
 ?>
 

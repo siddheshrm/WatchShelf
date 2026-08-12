@@ -115,7 +115,65 @@ foreach ($currentRetailers as $retailer) {
     }
 }
 
+$productDescriptionParts = [];
+
+if (!empty($watch['gender'])) {
+    switch (strtolower($watch['gender'])) {
+        case 'men':
+            $productDescriptionParts[] = "Men's watch";
+            break;
+
+        case 'women':
+            $productDescriptionParts[] = "Women's watch";
+            break;
+
+        case 'unisex':
+            $productDescriptionParts[] = 'Unisex watch';
+            break;
+
+        default:
+            $productDescriptionParts[] = ucfirst($watch['gender']) . ' watch';
+            break;
+    }
+}
+
+if (!empty($watch['movement_type'])) {
+    $productDescriptionParts[] =
+        ucfirst($watch['movement_type']) . ' movement';
+}
+
+if (!empty($watch['case_diameter_mm'])) {
+    $productDescriptionParts[] =
+        $watch['case_diameter_mm'] . ' mm case';
+}
+
+$productDescription = implode(' with ', array_slice($productDescriptionParts, 0, 1));
+
+if (count($productDescriptionParts) > 1) {
+    $productDescription .= ' featuring ' .
+        implode(' and ', array_slice($productDescriptionParts, 1));
+}
+
+if ($productDescription !== '') {
+    $productDescription .= '.';
+}
+
 $page_title = $watch['brand'] . " " . $watch['model_name'];
+
+$og_type = 'product';
+$og_title = $page_title;
+$og_description = "Compare prices and retailers for {$page_title} on WatchShelf.";
+$og_url = SITE_URL . '/watch/details.php?id=' . $id;
+$og_image = $images[0] ?? DEFAULT_WATCH_IMAGE;
+
+$page_description = sprintf(
+    "View details, specifications, prices, and availability for the %s %s on WatchShelf.",
+    $watch['brand'],
+    $watch['model_name']
+);
+
+$page_canonical = SITE_URL . '/watch/details.php?id=' . $id;
+$page_robots = 'index, follow';
 
 // Calculate Discount
 $discountAmount = 0;
@@ -154,6 +212,115 @@ foreach ($variants as $variant) {
     }
 }
 
+$productSchema = [
+    '@context' => 'https://schema.org',
+    '@type' => 'Product',
+
+    'name' => $page_title,
+    'image' => array_values($images),
+    'description' => $page_description,
+
+    'brand' => [
+        '@type' => 'Brand',
+        'name' => $watch['brand']
+    ],
+
+    'offers' => []
+];
+
+foreach ($currentRetailers as $retailer) {
+
+    if (!$retailer['is_available'] || $retailer['price'] === null || empty($retailer['base_url'])) {
+        continue;
+    }
+
+    $productSchema['offers'][] = [
+        '@type' => 'Offer',
+        'url' => $retailer['affiliate_url'] ?: $retailer['base_url'],
+        'priceCurrency' => $retailer['currency'] ?: 'INR',
+        'price' => number_format((float) $retailer['price'], 2, '.', ''),
+        'availability' => 'https://schema.org/InStock',
+        'itemCondition' => 'https://schema.org/NewCondition'
+    ];
+}
+
+if (empty($productSchema['offers'])) {
+    unset($productSchema['offers']);
+}
+
+if (!empty($images) && $images[0] !== DEFAULT_WATCH_IMAGE) {
+    $productSchema['image'] = $images;
+}
+
+if (!empty($watch['model_name'])) {
+    $productSchema['model'] = $watch['model_name'];
+}
+
+$breadcrumbSchema = [
+    '@context' => 'https://schema.org',
+    '@type' => 'BreadcrumbList',
+    'itemListElement' => [
+        [
+            '@type' => 'ListItem',
+            'position' => 1,
+            'name' => 'Home',
+            'item' => SITE_URL . '/'
+        ],
+        [
+            '@type' => 'ListItem',
+            'position' => 2,
+            'name' => $watch['brand'],
+            'item' => SITE_URL . '/?brand[]=' . urlencode($watch['brand'])
+        ],
+        [
+            '@type' => 'ListItem',
+            'position' => 3,
+            'name' => $page_title,
+            'item' => $page_canonical
+        ]
+    ]
+];
+
+$productQuickLinks = [];
+
+if (isset($quickLinks) && is_array($quickLinks)) {
+
+    foreach ($quickLinks as $slug => $quickLink) {
+
+        $filters = $quickLink['filters'];
+        $matches = true;
+
+        if (isset($filters['brand'])) {
+            $matches = $matches &&
+                strtolower($watch['brand']) === strtolower($filters['brand']);
+        }
+
+        if (isset($filters['gender'])) {
+            $productGender = strtolower($watch['gender']);
+            $filterGender = strtolower($filters['gender']);
+
+            $matches = $matches &&
+                ($productGender === $filterGender || $productGender === 'unisex');
+        }
+
+        if (isset($filters['movement_type'])) {
+            $matches = $matches &&
+                strtolower($watch['movement_type']) === strtolower($filters['movement_type']);
+        }
+
+        if (isset($filters['max_price'])) {
+            $matches = $matches &&
+                $bestRetailer &&
+                $bestRetailer['price'] !== null &&
+                (float) $bestRetailer['price'] <= (float) $filters['max_price'];
+        }
+
+        if ($matches) {
+            $productQuickLinks[$slug] = $quickLink;
+        }
+    }
+}
+
 include '../includes/header.php';
 ?>
 
@@ -161,10 +328,12 @@ include '../includes/header.php';
     <div class="site-container">
         <!-- Breadcrumb -->
         <nav class="product-breadcrumb" aria-label="Breadcrumb">
-            <a href="../index.php">Home</a>
+            <a href="<?= SITE_URL ?>/">Home</a>
             <span>&gt;</span>
 
-            <a href="../index.php?brand[]=<?= urlencode($watch['brand']) ?>"><?= htmlspecialchars($watch['brand']) ?></a>
+            <a href="<?= SITE_URL ?>/?brand[]=<?= urlencode($watch['brand']) ?>">
+                <?= htmlspecialchars($watch['brand']) ?>
+            </a>
             <span>&gt;</span>
 
             <span><?= htmlspecialchars($watch['model_name']) ?></span>
@@ -187,6 +356,12 @@ include '../includes/header.php';
             <div class="product-details">
                 <p class="product-brand"><?= htmlspecialchars($watch['brand']) ?></p>
                 <h1 class="product-title"><?= htmlspecialchars($watch['model_name']) ?></h1>
+
+                <?php if (!empty($productDescription)): ?>
+                    <p class="product-description">
+                        <?= htmlspecialchars($productDescription) ?>
+                    </p>
+                <?php endif; ?>
 
                 <!-- Featured Status -->
                 <?php if ($watch['is_featured']): ?>
@@ -220,6 +395,44 @@ include '../includes/header.php';
                             echo ucfirst($watch['gender']) . " Watch";
                     }
                     ?>
+                </p>
+
+                <?php
+                $productIntro = $page_title;
+
+                if (!empty($watch['gender'])) {
+                    switch (strtolower($watch['gender'])) {
+                        case 'men':
+                            $productIntro .= " is a men's watch";
+                            break;
+
+                        case 'women':
+                            $productIntro .= " is a women's watch";
+                            break;
+
+                        case 'unisex':
+                            $productIntro .= " is a unisex watch";
+                            break;
+
+                        default:
+                            $productIntro .= " is a " . strtolower($watch['gender']) . " watch";
+                            break;
+                    }
+                }
+
+                if (!empty($watch['movement_type'])) {
+                    $productIntro .= " featuring " . strtolower($watch['movement_type']) . " movement";
+                }
+
+                if (!empty($watch['case_diameter_mm'])) {
+                    $productIntro .= " and a " . $watch['case_diameter_mm'] . " mm case";
+                }
+
+                $productIntro .= ".";
+                ?>
+
+                <p class="product-intro">
+                    <?= htmlspecialchars($productIntro) ?>
                 </p>
 
                 <!-- Top Highlights -->
@@ -386,6 +599,31 @@ include '../includes/header.php';
 
         <script src="<?= BASE_URL ?>/assets/js/details.js"></script>
     </div>
+
+    <!-- Related Watch Guides -->
+    <?php if (!empty($productQuickLinks)): ?>
+
+        <section class="product-guides">
+            <div class="site-container">
+
+                <h2>Explore More Watch Guides</h2>
+
+                <div class="quick-links-list">
+
+                    <?php foreach ($productQuickLinks as $slug => $quickLink): ?>
+
+                        <a href="<?= BASE_URL ?>/index.php?quick_link=<?= urlencode($slug) ?>">
+                            <?= htmlspecialchars($quickLink['title']) ?>
+                        </a>
+
+                    <?php endforeach; ?>
+
+                </div>
+
+            </div>
+        </section>
+
+    <?php endif; ?>
 </main>
 
 <?php include 'related.php'; ?>

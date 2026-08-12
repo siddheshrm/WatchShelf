@@ -8,6 +8,9 @@ $quickLinks = require_once 'config/quick-links.php';
 
 // Page configuration
 $page_title = "Home";
+$page_description = "Discover and compare budget-friendly watches from popular brands and retailers in India.";
+$page_canonical = SITE_URL . '/';
+$page_robots = 'index, follow';
 
 // Sorting
 $sort = $_GET['sort'] ?? 'featured';
@@ -35,16 +38,77 @@ $includeOutOfStock = isset($_GET['include_out_of_stock']);
 if (isset($_GET['search_submit']) && !empty(trim($_GET['search'] ?? ''))) {
     $watchIds = searchWatches($conn, $_GET['search']);
 
+    $searchQuery = trim($_GET['search']);
+
+    // Search result pages are not canonical landing pages.
+    $page_title = "Search Results for \"" . $searchQuery . "\"";
+
+    $catalog_heading = "Search Results for \"" . $searchQuery . "\"";
+    $catalog_intro = '';
+
+    $page_robots = 'noindex, follow';
+    $page_canonical = SITE_URL . '/';
+
+    $og_type = 'website';
+    $og_title = 'Search Results | WatchShelf';
+    $og_description = 'Search and compare budget-friendly watches on WatchShelf.';
+    $og_url = SITE_URL . '/';
 } elseif (isset($_GET['quick_link']) && isset($quickLinks[$_GET['quick_link']])) {
-    // Check if a valid quick link was selected
+
+    // Apply quick-link catalogue logic
     $quickLink = $quickLinks[$_GET['quick_link']];
+
     $page_title = $quickLink['title'];
+    $page_description = $quickLink['description'] ?? "Discover {$quickLink['title']} on WatchShelf.";
+    $page_canonical = SITE_URL . '/?quick_link=' . urlencode($_GET['quick_link']);
+    $page_robots = 'index, follow';
+
+    $og_type = 'website';
+    $og_title = $page_title;
+    $og_description = $page_description;
+    $og_url = $page_canonical;
+
+    $catalog_heading = $quickLink['title'];
+    $catalog_intro = $quickLink['description'] ?? '';
 
     $watchIds = filterQuickLinkWatches($conn, $quickLink['filters']);
 } else {
-    // Check if a valid quick link was selected
     $watchIds = filterWatches($conn, $_GET);
+
+    $hasCatalogueFilters =
+        isset($_GET['gender']) ||
+        isset($_GET['brand']) ||
+        isset($_GET['retailer']) ||
+        isset($_GET['color']) ||
+        isset($_GET['movement']) ||
+        isset($_GET['include_out_of_stock']) ||
+        isset($_GET['max_price']) ||
+        isset($_GET['sort']);
+
+    if ($hasCatalogueFilters) {
+        // Generic search/filter/sort combinations are not canonical landing pages.
+        $page_robots = 'noindex, follow';
+        $page_canonical = SITE_URL . '/';
+
+        $og_type = 'website';
+        $og_title = 'WatchShelf';
+        $og_description = 'Discover and compare budget-friendly watches on WatchShelf.';
+        $og_url = SITE_URL . '/';
+    } else {
+        // Homepage / default catalogue
+        $page_robots = 'index, follow';
+        $page_canonical = SITE_URL . '/';
+
+        $og_type = 'website';
+        $og_title = 'WatchShelf';
+        $og_description = $page_description;
+        $og_url = SITE_URL . '/';
+    }
+
+    $catalog_heading = 'Find Your Perfect Budget Watch';
+    $catalog_intro = '';
 }
+
 if (empty($watchIds)) {
     $watchResult = false;
 } else {
@@ -85,8 +149,13 @@ include 'includes/header.php';
 <main class="site-main">
     <section class="page-hero">
         <div class="site-container">
-            <h1>Find Your Perfect Budget Watch</h1>
-            <p>Explore budget watches, compare specifications, and find the best available prices.</p>
+            <h1><?= htmlspecialchars($catalog_heading) ?></h1>
+
+            <?php if (!empty($catalog_intro)): ?>
+                <p><?= htmlspecialchars($catalog_intro) ?></p>
+            <?php else: ?>
+                <p>Explore budget watches, compare specifications, and find the best available prices.</p>
+            <?php endif; ?>
         </div>
     </section>
 
@@ -204,6 +273,33 @@ include 'includes/header.php';
             </section>
         </div>
     </div>
+
+    <!-- Related Quick Links for internal navigation between SEO landing pages -->
+    <?php if (!empty($quickLink['related'])): ?>
+
+        <section class="related-quick-links">
+            <div class="site-container">
+                <h2>Explore More Watch Guides</h2>
+
+                <div class="quick-links-list">
+
+                    <?php foreach ($quickLink['related'] as $relatedSlug): ?>
+
+                        <?php if (!isset($quickLinks[$relatedSlug])) {
+                            continue;
+                        } ?>
+
+                        <a href="<?= BASE_URL ?>/index.php?quick_link=<?= urlencode($relatedSlug) ?>">
+                            <?= htmlspecialchars($quickLinks[$relatedSlug]['title']) ?>
+                        </a>
+
+                    <?php endforeach; ?>
+                </div>
+
+            </div>
+        </section>
+
+    <?php endif; ?>
 </main>
 
 <?php include 'includes/footer.php'; ?>

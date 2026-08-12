@@ -1,5 +1,7 @@
 <?php
 $page_title = 'Privacy Policy';
+$page_canonical = SITE_URL . '/privacy-policy.php';
+
 include 'includes/header.php';
 ?>
 

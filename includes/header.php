@@ -1,13 +1,26 @@
 <?php
 require_once __DIR__ . '/../config/app.php';
 
-// Site-wide metadata used across the page
+$quickLinks = require_once __DIR__ . '/../config/quick-links.php';
+
+// Site-wide metadata
 $site_name = SITE_NAME;
 $site_tagline = "Find Your Perfect Budget Watch";
-$site_description = "Explore and compare budget watches with detailed specs and prices from Amazon, Flipkart, Myntra, HMT, and more.";
+$site_description = "Explore and compare budget watches with detailed specs and prices from Amazon, Flipkart, Myntra, Casio, and more.";
 
-// Fall back to the site name when a page-specific title isn't provided
+// Page title fallback
 $page_title = $page_title ?? $site_name;
+
+// Default metadata
+$page_description = $page_description ?? $site_description;
+$page_robots = $page_robots ?? 'index, follow';
+$page_canonical = $page_canonical ?? SITE_URL . '/';
+
+$og_type = $og_type ?? 'website';
+$og_title = $og_title ?? $page_title . ' | ' . $site_name;
+$og_description = $og_description ?? $page_description;
+$og_url = $og_url ?? $page_canonical;
+
 ?>
 
 <!DOCTYPE html>
@@ -18,7 +31,37 @@ $page_title = $page_title ?? $site_name;
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <title><?= htmlspecialchars($page_title) ?> | <?= htmlspecialchars($site_name) ?></title>
-    <meta name="description" content="<?= htmlspecialchars($site_description) ?>">
+
+    <meta name="description" content="<?= htmlspecialchars($page_description) ?>">
+    <meta name="robots" content="<?= htmlspecialchars($page_robots) ?>">
+    <link rel="canonical" href="<?= htmlspecialchars($page_canonical) ?>">
+
+    <meta property="og:type" content="<?= htmlspecialchars($og_type) ?>">
+    <meta property="og:title" content="<?= htmlspecialchars($og_title) ?>">
+    <meta property="og:description" content="<?= htmlspecialchars($og_description) ?>">
+    <meta property="og:url" content="<?= htmlspecialchars($og_url) ?>">
+
+    <?php if (!empty($og_image)): ?>
+        <meta property="og:image" content="<?= htmlspecialchars($og_image) ?>">
+    <?php endif; ?>
+
+    <?php if (!empty($productSchema)): ?>
+        <script type="application/ld+json">
+            <?= json_encode(
+                $productSchema,
+                JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT
+            ) ?>
+        </script>
+    <?php endif; ?>
+
+    <?php if (!empty($breadcrumbSchema)): ?>
+        <script type="application/ld+json">
+            <?= json_encode(
+                $breadcrumbSchema,
+                JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT
+            ) ?>
+        </script>
+    <?php endif; ?>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -34,6 +77,7 @@ $page_title = $page_title ?? $site_name;
 <body>
     <header class="site-header">
         <div class="site-container">
+
             <form class="search-form" action="<?= BASE_URL ?>/index.php" method="GET">
                 <input type="text" name="search" placeholder="Search watches..."
                     value="<?= htmlspecialchars($_GET['search'] ?? '') ?>">
@@ -45,6 +89,7 @@ $page_title = $page_title ?? $site_name;
                 <a href="<?= BASE_URL ?>/index.php">
                     <h2><?= htmlspecialchars($site_name) ?></h2>
                 </a>
+
                 <p><?= htmlspecialchars($site_tagline) ?></p>
             </div>
 
@@ -55,5 +100,6 @@ $page_title = $page_title ?? $site_name;
                     <li><a href="<?= BASE_URL ?>/contact.php">Contact</a></li>
                 </ul>
             </nav>
+
         </div>
     </header>

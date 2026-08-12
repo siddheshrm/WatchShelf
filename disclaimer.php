@@ -1,5 +1,7 @@
 <?php
 $page_title = 'Disclaimer';
+$page_canonical = SITE_URL . '/disclaimer.php';
+
 include 'includes/header.php';
 ?>
 
