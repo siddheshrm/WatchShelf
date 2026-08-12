@@ -1,4 +1,6 @@
 <?php
+require_once 'config/app.php';
+
 $page_title = 'About';
 $page_canonical = SITE_URL . '/about.php';
 

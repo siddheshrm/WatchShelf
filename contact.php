@@ -1,4 +1,6 @@
 <?php
+require_once 'config/app.php';
+
 $page_title = 'Contact';
 $page_canonical = SITE_URL . '/contact.php';
 

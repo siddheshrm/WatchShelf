@@ -1,8 +1,6 @@
 <?php
 require_once __DIR__ . '/../config/app.php';
 
-$quickLinks = require_once __DIR__ . '/../config/quick-links.php';
-
 // Site-wide metadata
 $site_name = SITE_NAME;
 $site_tagline = "Find Your Perfect Budget Watch";

@@ -115,49 +115,6 @@ foreach ($currentRetailers as $retailer) {
     }
 }
 
-$productDescriptionParts = [];
-
-if (!empty($watch['gender'])) {
-    switch (strtolower($watch['gender'])) {
-        case 'men':
-            $productDescriptionParts[] = "Men's watch";
-            break;
-
-        case 'women':
-            $productDescriptionParts[] = "Women's watch";
-            break;
-
-        case 'unisex':
-            $productDescriptionParts[] = 'Unisex watch';
-            break;
-
-        default:
-            $productDescriptionParts[] = ucfirst($watch['gender']) . ' watch';
-            break;
-    }
-}
-
-if (!empty($watch['movement_type'])) {
-    $productDescriptionParts[] =
-        ucfirst($watch['movement_type']) . ' movement';
-}
-
-if (!empty($watch['case_diameter_mm'])) {
-    $productDescriptionParts[] =
-        $watch['case_diameter_mm'] . ' mm case';
-}
-
-$productDescription = implode(' with ', array_slice($productDescriptionParts, 0, 1));
-
-if (count($productDescriptionParts) > 1) {
-    $productDescription .= ' featuring ' .
-        implode(' and ', array_slice($productDescriptionParts, 1));
-}
-
-if ($productDescription !== '') {
-    $productDescription .= '.';
-}
-
 $page_title = $watch['brand'] . " " . $watch['model_name'];
 
 $og_type = 'product';
@@ -375,53 +332,31 @@ include '../includes/header.php';
                     <p class="product-badge wishlist"><?= OWNER_WISHLIST_LABEL ?></p>
                 <?php endif; ?>
 
-                <!-- Gender -->
-                <p class="product-gender">
-                    <?php
-                    switch (strtolower($watch['gender'])) {
-                        case 'men':
-                            echo "Men's Watch";
-                            break;
-
-                        case 'women':
-                            echo "Women's Watch";
-                            break;
-
-                        case 'unisex':
-                            echo "Unisex Watch";
-                            break;
-
-                        default:
-                            echo ucfirst($watch['gender']) . " Watch";
-                    }
-                    ?>
-                </p>
-
                 <?php
-                $productIntro = $page_title;
+                $productIntro = '';
 
                 if (!empty($watch['gender'])) {
                     switch (strtolower($watch['gender'])) {
                         case 'men':
-                            $productIntro .= " is a men's watch";
+                            $productIntro .= "This men's watch";
                             break;
 
                         case 'women':
-                            $productIntro .= " is a women's watch";
+                            $productIntro .= "This women's watch";
                             break;
 
                         case 'unisex':
-                            $productIntro .= " is a unisex watch";
+                            $productIntro .= "This unisex watch";
                             break;
 
                         default:
-                            $productIntro .= " is a " . strtolower($watch['gender']) . " watch";
+                            $productIntro .= "This " . strtolower($watch['gender']) . " watch";
                             break;
                     }
                 }
 
                 if (!empty($watch['movement_type'])) {
-                    $productIntro .= " featuring " . strtolower($watch['movement_type']) . " movement";
+                    $productIntro .= " features a " . strtolower($watch['movement_type']) . " movement";
                 }
 
                 if (!empty($watch['case_diameter_mm'])) {
@@ -439,10 +374,10 @@ include '../includes/header.php';
                 <div class="top-highlights">
                     <h3>Top Highlights</h3>
 
-                    <!-- Case Diameter -->
+                    <!-- Case Size -->
                     <?php if (!empty($watch['case_diameter_mm'])): ?>
                         <div class="highlight-item">
-                            <span>Case Diameter</span>
+                            <span>Case Size</span>
                             <strong><?= $watch['case_diameter_mm'] ?> mm</strong>
                         </div>
                     <?php endif; ?>

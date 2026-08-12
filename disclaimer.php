@@ -1,4 +1,6 @@
 <?php
+require_once 'config/app.php';
+
 $page_title = 'Disclaimer';
 $page_canonical = SITE_URL . '/disclaimer.php';
 
