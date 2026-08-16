@@ -355,8 +355,9 @@ p {
 
 .catalog-layout {
   display: grid;
-  grid-template-columns: 250px 1fr;
+  grid-template-columns: 250px minmax(0, 1fr);
   gap: var(--space-xl);
+
   align-items: start;
 
   padding-block: var(--space-xxl);
@@ -564,4 +565,45 @@ p {
   font-size: var(--font-size-sm);
   font-style: italic;
   color: var(--color-text-muted);
+}
+
+/* ==========================================================================
+   PAGINATION
+   ========================================================================== */
+
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-sm);
+}
+
+.pagination-link {
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+
+  min-width: 2.5rem;
+  min-height: 2.5rem;
+
+  padding-inline: var(--space-sm);
+
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+
+  background: var(--color-surface);
+
+  transition: var(--transition);
+}
+
+.pagination-link:hover {
+  background: var(--color-accent-light);
+}
+
+.pagination-link.active {
+  background: var(--color-accent);
+  color: var(--color-text-inverse);
+
+  border-color: var(--color-accent);
 }

@@ -17,19 +17,31 @@ $sort = $_GET['sort'] ?? 'featured';
 
 switch ($sort) {
     case 'price_low':
-        $orderBy = "min_price ASC";
+        $orderBy = "min_price ASC, w.brand ASC, w.model_name ASC, w.id ASC";
         break;
 
     case 'price_high':
-        $orderBy = "min_price DESC";
+        $orderBy = "min_price DESC, w.brand ASC, w.model_name ASC, w.id ASC";
         break;
 
     default:
-        $orderBy = "w.is_featured DESC, min_price ASC, w.brand ASC, w.model_name ASC";
+        $orderBy = "w.is_featured DESC, min_price ASC, w.brand ASC, w.model_name ASC, w.id ASC";
 }
 
 // Availability
 $includeOutOfStock = isset($_GET['include_out_of_stock']);
+
+// Pagination
+$productsPerPage = 20;
+$currentPage = max(1, (int) ($_GET['page'] ?? 1));
+
+function buildPaginationUrl(int $page): string
+{
+    $params = $_GET;
+    $params['page'] = $page;
+
+    return 'index.php?' . http_build_query($params);
+}
 
 // Determine which set of watches to display
 // Priority: Search > Quick Link > Filters/Default
@@ -111,15 +123,72 @@ if (isset($_GET['search_submit']) && !empty(trim($_GET['search'] ?? ''))) {
 
 if (empty($watchIds)) {
     $watchResult = false;
+    $totalPages = 0;
 } else {
-    // Display watches using user-selected filters, or all watches when no filters are applied
+    $totalWatches = count($watchIds);
+    $totalPages = (int) ceil($totalWatches / $productsPerPage);
+
+    // Prevent invalid page numbers from requesting an empty page.
+    if ($currentPage > $totalPages) {
+        $currentPage = $totalPages;
+    }
+
+    // Sort the complete result set before pagination.
+    // This ensures sorting is applied consistently across all pages.
     $placeholders = implode(',', array_fill(0, count($watchIds), '?'));
+
+    $sortSql = "SELECT w.id, w.is_featured, MIN(CASE WHEN wr.is_available = 1 AND wr.price IS NOT NULL THEN wr.price END) AS min_price
+                        FROM watches w
+                        LEFT JOIN watch_variants wr
+                        ON wr.watch_id = w.id
+                        WHERE w.id IN ($placeholders)
+                        AND w.is_active = 1
+                        GROUP BY w.id";
+
+    if (!$includeOutOfStock) {
+        $sortSql .= " HAVING MAX(wr.is_available) = 1 ";
+    }
+
+    $sortSql .= " ORDER BY $orderBy";
+
+    $stmt = $conn->prepare($sortSql);
+
+    if (!$stmt) {
+        die($conn->error . "<br><br>" . $sortSql);
+    }
+
+    $types = str_repeat('i', count($watchIds));
+    $stmt->bind_param($types, ...$watchIds);
+
+    $stmt->execute();
+
+    $sortedResult = $stmt->get_result();
+
+    $sortedWatchIds = [];
+
+    while ($row = $sortedResult->fetch_assoc()) {
+        $sortedWatchIds[] = (int) $row['id'];
+    }
+
+    $stmt->close();
+
+    // Paginate the globally sorted result set
+    $offset = ($currentPage - 1) * $productsPerPage;
+
+    $pageWatchIds = array_slice(
+        $sortedWatchIds,
+        $offset,
+        $productsPerPage
+    );
+
+    // Fetch the complete product data for the current page
+    $pagePlaceholders = implode(',', array_fill(0, count($pageWatchIds), '?'));
 
     $sql = "SELECT w.*, (SELECT image_folder FROM watch_variants dv WHERE dv.watch_id = w.id AND dv.is_default = 1 LIMIT 1) AS default_image_folder, MIN(CASE WHEN wr.is_available = 1 AND wr.price IS NOT NULL THEN wr.price END) AS min_price, MAX(wr.is_available) AS has_stock, COUNT(DISTINCT wr.color_name) AS color_count, COUNT(*) AS variant_count
                 FROM watches w
                 LEFT JOIN watch_variants wr
                 ON wr.watch_id = w.id
-                WHERE w.id IN ($placeholders)
+                WHERE w.id IN ($pagePlaceholders)
                 AND w.is_active = 1
                 GROUP BY w.id";
 
@@ -127,7 +196,11 @@ if (empty($watchIds)) {
         $sql .= " HAVING has_stock = 1 ";
     }
 
-    $sql .= " ORDER BY $orderBy";
+    // The IDs have already been globally sorted.
+    // FIELD() preserves that exact order for the final product result.
+    $idOrder = implode(',', array_map('intval', $pageWatchIds));
+
+    $sql .= " ORDER BY FIELD(w.id, $idOrder)";
 
     $stmt = $conn->prepare($sql);
 
@@ -135,9 +208,8 @@ if (empty($watchIds)) {
         die($conn->error . "<br><br>" . $sql);
     }
 
-    // Bind all watch IDs to the IN() clause
-    $types = str_repeat('i', count($watchIds));
-    $stmt->bind_param($types, ...$watchIds);
+    $types = str_repeat('i', count($pageWatchIds));
+    $stmt->bind_param($types, ...$pageWatchIds);
 
     $stmt->execute();
     $watchResult = $stmt->get_result();
@@ -270,6 +342,46 @@ include 'includes/header.php';
                         </div>
                     <?php endif; ?>
                 </div>
+
+                <!-- Pagination -->
+                <?php if ($totalPages > 1): ?>
+                    <nav class="pagination" aria-label="Catalogue pagination">
+
+                        <?php if ($currentPage > 1): ?>
+                            <a class="pagination-link"
+                                href="<?= htmlspecialchars(buildPaginationUrl($currentPage - 1)) ?>"
+                                aria-label="Previous page">
+                                Previous
+                            </a>
+                        <?php endif; ?>
+
+                        <?php for ($page = 1; $page <= $totalPages; $page++): ?>
+                            <?php if ($page === $currentPage): ?>
+
+                                <span class="pagination-link active" aria-current="page">
+                                    <?= $page ?>
+                                </span>
+
+                            <?php else: ?>
+
+                                <a class="pagination-link"
+                                    href="<?= htmlspecialchars(buildPaginationUrl($page)) ?>">
+                                    <?= $page ?>
+                                </a>
+
+                            <?php endif; ?>
+                        <?php endfor; ?>
+
+                        <?php if ($currentPage < $totalPages): ?>
+                            <a class="pagination-link"
+                                href="<?= htmlspecialchars(buildPaginationUrl($currentPage + 1)) ?>"
+                                aria-label="Next page">
+                                Next
+                            </a>
+                        <?php endif; ?>
+
+                    </nav>
+                <?php endif; ?>
             </section>
         </div>
     </div>
