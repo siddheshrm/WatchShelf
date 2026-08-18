@@ -43,12 +43,29 @@ function buildPaginationUrl(int $page): string
     return 'index.php?' . http_build_query($params);
 }
 
-// Determine which set of watches to display
-// Priority: Search > Quick Link > Filters/Default
+// Determine which catalogue mode to display
+// Request source: Search / Quick Link / Filters / Default
 
-// Check if a search query was submitted and is not empty
+$emptyResult = false;
+$emptyResultType = null;
+
+$includeOutOfStock = false;
+
+// Determine which catalogue mode to display
+// Request source: Search / Quick Link / Filters / Default
+
+// Search
 if (isset($_GET['search_submit']) && !empty(trim($_GET['search'] ?? ''))) {
     $watchIds = searchWatches($conn, $_GET['search']);
+
+    if (empty($watchIds)) {
+        $emptyResult = true;
+        $emptyResultType = 'search';
+
+        $watchIds = filterWatches($conn, []);
+    } else {
+        $includeOutOfStock = true;
+    }
 
     $searchQuery = trim($_GET['search']);
 
@@ -65,6 +82,8 @@ if (isset($_GET['search_submit']) && !empty(trim($_GET['search'] ?? ''))) {
     $og_title = 'Search Results | WatchShelf';
     $og_description = 'Search and compare budget-friendly watches on WatchShelf.';
     $og_url = SITE_URL . '/';
+
+    // Quick Link
 } elseif (isset($_GET['quick_link']) && isset($quickLinks[$_GET['quick_link']])) {
 
     // Apply quick-link catalogue logic
@@ -84,38 +103,46 @@ if (isset($_GET['search_submit']) && !empty(trim($_GET['search'] ?? ''))) {
     $catalog_intro = $quickLink['description'] ?? '';
 
     $watchIds = filterQuickLinkWatches($conn, $quickLink['filters']);
-} else {
+    $includeOutOfStock = true;
+
+    // Filters
+} elseif (isset($_GET['filter_submit'])) {
+
+    $includeOutOfStock = isset($_GET['include_out_of_stock']);
     $watchIds = filterWatches($conn, $_GET);
 
-    $hasCatalogueFilters =
-        isset($_GET['gender']) ||
-        isset($_GET['brand']) ||
-        isset($_GET['retailer']) ||
-        isset($_GET['color']) ||
-        isset($_GET['movement']) ||
-        isset($_GET['include_out_of_stock']) ||
-        isset($_GET['max_price']) ||
-        isset($_GET['sort']);
+    if (empty($watchIds)) {
+        $emptyResult = true;
+        $emptyResultType = 'filter';
 
-    if ($hasCatalogueFilters) {
-        // Generic search/filter/sort combinations are not canonical landing pages.
-        $page_robots = 'noindex, follow';
-        $page_canonical = SITE_URL . '/';
-
-        $og_type = 'website';
-        $og_title = 'WatchShelf';
-        $og_description = 'Discover and compare budget-friendly watches on WatchShelf.';
-        $og_url = SITE_URL . '/';
-    } else {
-        // Homepage / default catalogue
-        $page_robots = 'index, follow';
-        $page_canonical = SITE_URL . '/';
-
-        $og_type = 'website';
-        $og_title = 'WatchShelf';
-        $og_description = $page_description;
-        $og_url = SITE_URL . '/';
+        $watchIds = filterWatches($conn, []);
     }
+
+    // Generic filter pages are not canonical landing pages.
+    $page_robots = 'noindex, follow';
+    $page_canonical = SITE_URL . '/';
+
+    $og_type = 'website';
+    $og_title = 'WatchShelf';
+    $og_description = 'Discover and compare budget-friendly watches on WatchShelf.';
+    $og_url = SITE_URL . '/';
+
+    $catalog_heading = 'Find Your Perfect Budget Watch';
+    $catalog_intro = '';
+
+    // Default catalogue
+} else {
+
+    $watchIds = filterWatches($conn, []);
+
+    // Homepage / default catalogue
+    $page_robots = 'index, follow';
+    $page_canonical = SITE_URL . '/';
+
+    $og_type = 'website';
+    $og_title = 'WatchShelf';
+    $og_description = $page_description;
+    $og_url = SITE_URL . '/';
 
     $catalog_heading = 'Find Your Perfect Budget Watch';
     $catalog_intro = '';
@@ -275,6 +302,24 @@ include 'includes/header.php';
                     </form>
                 </div>
 
+                <?php if ($emptyResult): ?>
+                    <div class="empty-state">
+                        <h2>No matching watches found</h2>
+
+                        <?php if ($emptyResultType === 'search'): ?>
+                            <p>
+                                We couldn't find any watches matching your search.
+                                Try a different search term or remove some filters.
+                            </p>
+                        <?php elseif ($emptyResultType === 'filter'): ?>
+                            <p>
+                                We couldn't find any watches matching your selected filters.
+                                Try removing one or more filters.
+                            </p>
+                        <?php endif; ?>
+                    </div>
+                <?php endif; ?>
+
                 <div class="watch-grid">
                     <?php if ($watchResult && $watchResult->num_rows > 0): ?>
                         <!-- Display the matching watches -->
@@ -338,7 +383,8 @@ include 'includes/header.php';
 
                     <?php else: ?>
                         <div class="empty-state">
-                            <p>No watches available.</p>
+                            <h2>No watches available</h2>
+                            <p>There are currently no watches in our catalogue.</p>
                         </div>
                     <?php endif; ?>
                 </div>

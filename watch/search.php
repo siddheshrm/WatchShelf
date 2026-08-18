@@ -21,19 +21,11 @@ function searchWatches(mysqli $conn, string $search): array
     // Ignore common filler words so only meaningful search terms contribute to the SQL query
     $ignoreWords = ['watch', 'watches', 'under', 'below', 'less', 'than', 'for', 'with', 'around', 'about', 'upto', 'up', 'to'];
 
-    $includeOutOfStock = isset($_GET['include_out_of_stock']);
-
-    $joinCondition = $includeOutOfStock ? "wr.watch_id = w.id" : "wr.watch_id = w.id AND wr.is_available = 1";
-
     $sql = "SELECT DISTINCT w.id
                 FROM watches w
                 LEFT JOIN watch_variants wr
-                ON $joinCondition
+                ON wr.watch_id = w.id
                 WHERE w.is_active = 1";
-
-    if (!$includeOutOfStock) {
-        $sql .= " AND wr.watch_id IS NOT NULL";
-    }
 
     // Final parameter type string for bind_param()
     $bindTypes = "";
@@ -194,19 +186,12 @@ function extractSearchTerms(string $search, array $colorGroups): array
 // Supports predefined watch attributes such as brand, gender, movement, materials, display type, and maximum price.
 function filterQuickLinkWatches(mysqli $conn, array $filters): array
 {
-    $includeOutOfStock = isset($_GET['include_out_of_stock']);
-
-    $joinCondition = $includeOutOfStock ? "wr.watch_id = w.id" : "wr.watch_id = w.id AND wr.is_available = 1";
-
+    // Include out-of-stock watches
     $sql = "SELECT DISTINCT w.id
                 FROM watches w
                 LEFT JOIN watch_variants wr
-                ON $joinCondition
+                ON wr.watch_id = w.id
                 WHERE w.is_active = 1";
-
-    if (!$includeOutOfStock) {
-        $sql .= " AND wr.watch_id IS NOT NULL";
-    }
 
     $columnMap = [
         'brand' => 'w.brand',
@@ -272,4 +257,3 @@ function filterQuickLinkWatches(mysqli $conn, array $filters): array
 
     return $watchIds;
 }
-?>
