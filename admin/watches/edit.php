@@ -122,7 +122,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $isDefault = ($colorIndex == $defaultColor) ? 1 : 0;
 
                 // Generate parent watch folder
-                $watchFolder = strtolower($brand . '-' . $modelName);
+                $watchFolder = strtolower(
+                    $brand . '-' .
+                        $modelName . '-' .
+                        $gender . '-' .
+                        $caseDiameter . 'mm-' .
+                        $caseMaterial . '-' .
+                        $bandMaterial
+                );
+
                 $watchFolder = preg_replace('/[^a-z0-9]+/', '-', $watchFolder);
                 $watchFolder = trim($watchFolder, '-');
 

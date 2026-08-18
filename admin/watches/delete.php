@@ -34,7 +34,7 @@ if (!isset($_GET['id']) || !is_numeric($_GET['id'])) {
 $watchId = (int) $_GET['id'];
 
 // Get image folder
-$stmt = $conn->prepare("SELECT brand, model_name FROM watches WHERE id = ?");
+$stmt = $conn->prepare("SELECT image_folder FROM watch_variants WHERE watch_id = ? LIMIT 1");
 if (!$stmt) {
     die($conn->error);
 }
@@ -51,11 +51,7 @@ if ($result->num_rows !== 1) {
 
 $watch = $result->fetch_assoc();
 
-$watchFolder = strtolower($watch['brand'] . '-' . $watch['model_name']);
-$watchFolder = preg_replace('/[^a-z0-9]+/', '-', $watchFolder);
-$watchFolder = trim($watchFolder, '-');
-
-$imageFolder = WATCH_IMAGE_DIR . '/' . $watchFolder;
+$imageFolder = WATCH_IMAGE_DIR . '/' . dirname($watch['image_folder']);
 
 $stmt->close();
 
