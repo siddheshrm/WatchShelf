@@ -77,11 +77,12 @@ if (!$result) {
                 <th>#</th>
                 <th>Image</th>
                 <th>Watch</th>
-                <th>Owner Status</th>
+                <th>Owned?</th>
                 <th>MRP</th>
                 <th>Gender</th>
+                <th>Case Size</th>
                 <th>Available Colors</th>
-                <th>Retailer Records</th>
+                <!--<th>Retailer Records</th>-->
                 <th>Featured?</th>
                 <th>Active?</th>
                 <th>Actions</th>
@@ -126,6 +127,9 @@ if (!$result) {
 
                         <!-- Gender -->
                         <td><?= ucfirst($watch['gender']); ?></td>
+                        
+                        <!-- Gender -->
+                        <td><?= ucfirst($watch['case_diameter_mm']); ?> mm</td>
 
                         <!-- Colors Variants -->
                         <td>
@@ -137,10 +141,6 @@ if (!$result) {
                         </td>
 
                         <!-- Retailer Records -->
-                        <td>
-                            <?= $watch['total_retailers']; ?>
-                            <?= $watch['total_retailers'] == 1 ? 'Retailer' : 'Retailers'; ?>
-                        </td>
 
                         <!-- Featured and Active status are displayed as 'Yes' or 'No' based on their boolean values -->
                         <td class="<?= $watch['is_featured'] ? 'status-yes' : 'status-no' ?>">
@@ -177,7 +177,8 @@ if (!$result) {
                 <?php endif; ?>
 
                 <?php for ($page = 1; $page <= $totalPages; $page++): ?>
-                    <a href="?page=<?= $page; ?>"
+                    <a
+                        href="?page=<?= $page; ?>"
                         class="<?= $page === $currentPage ? 'active' : ''; ?>">
                         <?= $page; ?>
                     </a>

@@ -390,6 +390,14 @@ include '../includes/header.php';
                         </div>
                     <?php endif; ?>
 
+                    <!-- Strap Material -->
+                    <?php if (!empty($watch['band_material'])): ?>
+                        <div class="highlight-item">
+                            <span>Strap Material</span>
+                            <strong><?= htmlspecialchars($watch['band_material']) ?></strong>
+                        </div>
+                    <?php endif; ?>
+
                     <!-- Warranty -->
                     <?php if (!empty($watch['warranty_years'])): ?>
                         <div class="highlight-item">

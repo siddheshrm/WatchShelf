@@ -537,20 +537,27 @@ p {
    EMPTY STATE
    ========================================================================== */
 
-.empty-state {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-
-  min-height: 300px;
-
-  background: var(--color-surface);
-
-  border: 1px dashed var(--color-border);
-  border-radius: var(--radius-lg);
+.empty-state h2 {
+  margin: 0 0 var(--space-xs);
+  font-size: 1.25rem;
 }
 
 .empty-state p {
+  margin: 0;
+}
+
+/* ==========================================================================
+   SEARCHBAR AND SIDEBAR FILTER RESULT COUNT
+   ========================================================================== */
+
+.catalog-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-lg);
+}
+
+.catalog-toolbar h2 {
   margin: 0;
 }
 

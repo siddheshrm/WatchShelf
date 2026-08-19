@@ -32,7 +32,7 @@ switch ($sort) {
 $includeOutOfStock = isset($_GET['include_out_of_stock']);
 
 // Pagination
-$productsPerPage = 20;
+$productsPerPage = 28;
 $currentPage = max(1, (int) ($_GET['page'] ?? 1));
 
 function buildPaginationUrl(int $page): string
@@ -43,13 +43,22 @@ function buildPaginationUrl(int $page): string
     return 'index.php?' . http_build_query($params);
 }
 
-// Determine which catalogue mode to display
-// Request source: Search / Quick Link / Filters / Default
-
 $emptyResult = false;
 $emptyResultType = null;
 
+$showResultCount = false;
+
 $includeOutOfStock = false;
+
+$hasCatalogueFilters =
+    isset($_GET['gender']) ||
+    isset($_GET['brand']) ||
+    isset($_GET['retailer']) ||
+    isset($_GET['color']) ||
+    isset($_GET['movement']) ||
+    isset($_GET['include_out_of_stock']) ||
+    isset($_GET['max_price']) ||
+    isset($_GET['sort']);
 
 // Determine which catalogue mode to display
 // Request source: Search / Quick Link / Filters / Default
@@ -65,6 +74,7 @@ if (isset($_GET['search_submit']) && !empty(trim($_GET['search'] ?? ''))) {
         $watchIds = filterWatches($conn, []);
     } else {
         $includeOutOfStock = true;
+        $showResultCount = true;
     }
 
     $searchQuery = trim($_GET['search']);
@@ -105,8 +115,12 @@ if (isset($_GET['search_submit']) && !empty(trim($_GET['search'] ?? ''))) {
     $watchIds = filterQuickLinkWatches($conn, $quickLink['filters']);
     $includeOutOfStock = true;
 
+    if (!empty($watchIds)) {
+        $showResultCount = true;
+    }
+
     // Filters
-} elseif (isset($_GET['filter_submit'])) {
+} elseif ($hasCatalogueFilters) {
 
     $includeOutOfStock = isset($_GET['include_out_of_stock']);
     $watchIds = filterWatches($conn, $_GET);
@@ -116,6 +130,8 @@ if (isset($_GET['search_submit']) && !empty(trim($_GET['search'] ?? ''))) {
         $emptyResultType = 'filter';
 
         $watchIds = filterWatches($conn, []);
+    } else {
+        $showResultCount = true;
     }
 
     // Generic filter pages are not canonical landing pages.
@@ -265,6 +281,12 @@ include 'includes/header.php';
             <section class="watch-catalog">
                 <div class="catalog-toolbar">
                     <h2>Available Watches</h2>
+
+                    <?php if ($showResultCount): ?>
+                        <p class="catalog-result-count">
+                            <?= $totalWatches ?> watches found
+                        </p>
+                    <?php endif; ?>
 
                     <form action="index.php" method="GET" class="sort-form">
                         <!-- Preserve the current search and filter state by copying existing GET parameters into hidden inputs, excluding the sort parameter -->
