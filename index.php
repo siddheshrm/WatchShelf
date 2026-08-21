@@ -101,8 +101,14 @@ if (isset($_GET['search_submit']) && !empty(trim($_GET['search'] ?? ''))) {
 
     $page_title = $quickLink['title'];
     $page_description = $quickLink['description'] ?? "Discover {$quickLink['title']} on WatchShelf.";
-    $page_canonical = SITE_URL . '/?quick_link=' . urlencode($_GET['quick_link']);
+
     $page_robots = 'index, follow';
+
+    if ($currentPage > 1) {
+        $page_canonical = SITE_URL . '/?quick_link=' . urlencode($_GET['quick_link']) . '&page=' . $currentPage;
+    } else {
+        $page_canonical = SITE_URL . '/?quick_link=' . urlencode($_GET['quick_link']);
+    }
 
     $og_type = 'website';
     $og_title = $page_title;
