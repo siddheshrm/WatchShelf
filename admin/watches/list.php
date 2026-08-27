@@ -84,7 +84,7 @@ if (!$result) {
                 <th>Available Colors</th>
                 <!--<th>Retailer Records</th>-->
                 <th>Featured?</th>
-                <th>Active?</th>
+                <!-- <th>Active?</th> -->
                 <th>Actions</th>
             </tr>
 
@@ -95,7 +95,6 @@ if (!$result) {
                     <tr>
                         <!-- Sr. No. (#) -->
                         <td><?= $srNo++; ?></td>
-
 
                         <!-- Image -->
                         <?php
@@ -114,8 +113,10 @@ if (!$result) {
 
                         <!-- Brand & Model -->
                         <td>
-                            <?= htmlspecialchars($watch['brand']); ?>
-                            <?= htmlspecialchars($watch['model_name']); ?>
+                            <a href="https://watchshelf.in/watch/details.php?id=<?= (int) $watch['id']; ?>" target="_blank">
+                                <?= htmlspecialchars($watch['brand']); ?>
+                                <?= htmlspecialchars($watch['model_name']); ?>
+                            </a>
                         </td>
 
                         <!-- Owner Status -->
@@ -127,7 +128,7 @@ if (!$result) {
 
                         <!-- Gender -->
                         <td><?= ucfirst($watch['gender']); ?></td>
-                        
+
                         <!-- Gender -->
                         <td><?= ucfirst($watch['case_diameter_mm']); ?> mm</td>
 
@@ -145,10 +146,6 @@ if (!$result) {
                         <!-- Featured and Active status are displayed as 'Yes' or 'No' based on their boolean values -->
                         <td class="<?= $watch['is_featured'] ? 'status-yes' : 'status-no' ?>">
                             <?= $watch['is_featured'] ? 'Yes' : 'No' ?>
-                        </td>
-
-                        <td class="<?= $watch['is_active'] ? 'status-yes' : 'status-no' ?>">
-                            <?= $watch['is_active'] ? 'Yes' : 'No' ?>
                         </td>
 
                         <!-- Actions -->

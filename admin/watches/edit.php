@@ -128,7 +128,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         $gender . '-' .
                         $caseDiameter . 'mm-' .
                         $caseMaterial . '-' .
-                        $bandMaterial
+                        $bandMaterial . '-' .
+                        $watchId
                 );
 
                 $watchFolder = preg_replace('/[^a-z0-9]+/', '-', $watchFolder);
