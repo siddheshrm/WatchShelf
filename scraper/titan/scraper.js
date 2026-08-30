@@ -13,14 +13,14 @@ if (!SCRAPER_API_KEY) {
 }
 
 // WatchShelf scraper API
+/*
 const QUEUE_URL = "http://localhost/WatchShelf/api/scraper/titan/queue.php";
 const UPDATE_URL = "http://localhost/WatchShelf/api/scraper/titan/update.php";
+*/
 
 // For production
-/*
 const QUEUE_URL = "https://watchshelf.in/api/scraper/titan/queue.php";
 const UPDATE_URL = "https://watchshelf.in/api/scraper/titan/update.php";
-*/
 
 // Logging
 const LOG_DIRECTORY = path.join(__dirname, "logs");
@@ -114,11 +114,6 @@ async function scrapeProduct(page, url) {
     throw new Error("Titan GTM data does not contain ecommerce.items[0].");
   }
 
-  const sku = item.item_variant;
-  if (!sku) {
-    throw new Error("Titan SKU is missing.");
-  }
-
   const price = Number.parseFloat(item.price);
   if (!Number.isFinite(price)) {
     throw new Error(`Invalid Titan price: ${item.price}`);
@@ -143,7 +138,6 @@ async function scrapeProduct(page, url) {
     (await buyNow.first().isEnabled());
 
   return {
-    sku,
     price,
     available: hasVisibleAddToCart || hasVisibleBuyNow,
     url,
@@ -159,15 +153,24 @@ async function fetchQueue() {
     },
   });
 
+  const responseText = await response.text();
+
   if (!response.ok) {
-    throw new Error(`Queue request failed: HTTP ${response.status}`);
+    throw new Error(
+      `Queue request failed: HTTP ${response.status}\n${responseText}`,
+    );
   }
 
-  // Validate the queue response
-  const data = await response.json();
+  let data;
+
+  try {
+    data = JSON.parse(responseText);
+  } catch {
+    throw new Error(`Queue returned invalid JSON:\n${responseText}`);
+  }
 
   if (!data.success || !Array.isArray(data.variants)) {
-    throw new Error("Invalid queue response.");
+    throw new Error(`Invalid queue response:\n${responseText}`);
   }
 
   return data.variants;
@@ -190,7 +193,7 @@ async function sendUpdates(results) {
     throw new Error(`Update request failed: HTTP ${response.status}`);
   }
 
-  // Validate the queue response
+  // Validate the update response
   const data = await response.json();
 
   if (!data.success && data.failed === undefined) {

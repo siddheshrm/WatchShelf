@@ -56,6 +56,7 @@ $hasCatalogueFilters =
     isset($_GET['retailer']) ||
     isset($_GET['color']) ||
     isset($_GET['movement']) ||
+    isset($_GET['case_width']) ||
     isset($_GET['include_out_of_stock']) ||
     isset($_GET['max_price']) ||
     isset($_GET['sort']);
@@ -186,6 +187,30 @@ if (empty($watchIds)) {
     // This ensures sorting is applied consistently across all pages.
     $placeholders = implode(',', array_fill(0, count($watchIds), '?'));
 
+    // Prioritize explicitly selected genders over Unisex.
+    $genderPrioritySql = '';
+
+    if (!empty($_GET['gender']) && is_array($_GET['gender'])) {
+        $selectedGendersForPriority = array_map(
+            fn($gender) => strtolower(trim($gender)),
+            $_GET['gender']
+        );
+
+        $hasSpecificGender =
+            in_array('men', $selectedGendersForPriority, true) ||
+            in_array('women', $selectedGendersForPriority, true);
+
+        // Only apply priority when Men/Women is selected without explicitly selecting Unisex.
+        // If Unisex is explicitly selected, all selected genders have equal priority.
+        if ($hasSpecificGender && !in_array('unisex', $selectedGendersForPriority, true)) {
+            $genderPrioritySql = "CASE
+                                                WHEN LOWER(w.gender) IN ('men', 'women') THEN 0
+                                                WHEN LOWER(w.gender) = 'unisex' THEN 1
+                                                ELSE 2
+                                                END, ";
+        }
+    }
+
     $sortSql = "SELECT w.id, w.is_featured, MIN(CASE WHEN wr.is_available = 1 AND wr.price IS NOT NULL THEN wr.price END) AS min_price
                         FROM watches w
                         LEFT JOIN watch_variants wr
@@ -198,7 +223,7 @@ if (empty($watchIds)) {
         $sortSql .= " HAVING MAX(wr.is_available) = 1 ";
     }
 
-    $sortSql .= " ORDER BY $orderBy";
+    $sortSql .= " ORDER BY $genderPrioritySql$orderBy";
 
     $stmt = $conn->prepare($sortSql);
 
