@@ -112,6 +112,63 @@
             <button type="button" class="filter-toggle" hidden>Show more</button>
         </div>
 
+        <!-- Case Width -->
+        <div class="filter-group filter-group-collapsible">
+            <h3 class="filter-heading">Case Width</h3>
+
+            <div class="filter-options">
+                <label class="filter-option">
+                    <input class="filter-price" type="checkbox" name="case_width[]" value="under_26"
+                        <?= in_array('under_26', $selectedCaseWidths, true) ? 'checked' : '' ?>>
+                    Under 26 mm
+                </label>
+
+                <label class="filter-option">
+                    <input class="filter-price" type="checkbox" name="case_width[]" value="26_30"
+                        <?= in_array('26_30', $selectedCaseWidths, true) ? 'checked' : '' ?>>
+                    26–29.9 mm
+                </label>
+
+                <label class="filter-option">
+                    <input class="filter-price" type="checkbox" name="case_width[]" value="30_34"
+                        <?= in_array('30_34', $selectedCaseWidths, true) ? 'checked' : '' ?>>
+                    30–33.9 mm
+                </label>
+
+                <label class="filter-option">
+                    <input class="filter-price" type="checkbox" name="case_width[]" value="34_38"
+                        <?= in_array('34_38', $selectedCaseWidths, true) ? 'checked' : '' ?>>
+                    34–37.9 mm
+                </label>
+
+                <label class="filter-option">
+                    <input class="filter-price" type="checkbox" name="case_width[]" value="38_42"
+                        <?= in_array('38_42', $selectedCaseWidths, true) ? 'checked' : '' ?>>
+                    38–41.9 mm
+                </label>
+
+                <label class="filter-option">
+                    <input class="filter-price" type="checkbox" name="case_width[]" value="42_46"
+                        <?= in_array('42_46', $selectedCaseWidths, true) ? 'checked' : '' ?>>
+                    42–45.9 mm
+                </label>
+
+                <label class="filter-option">
+                    <input class="filter-price" type="checkbox" name="case_width[]" value="46_50"
+                        <?= in_array('46_50', $selectedCaseWidths, true) ? 'checked' : '' ?>>
+                    46–49.9 mm
+                </label>
+
+                <label class="filter-option">
+                    <input class="filter-price" type="checkbox" name="case_width[]" value="50_plus"
+                        <?= in_array('50_plus', $selectedCaseWidths, true) ? 'checked' : '' ?>>
+                    50 mm &amp; above
+                </label>
+            </div>
+
+            <button type="button" class="filter-toggle" hidden>Show more</button>
+        </div>
+
         <!-- Availability -->
         <div class="filter-group">
             <h3 class="filter-heading">Availability</h3>

@@ -4,6 +4,7 @@ $selectedBrands = $_GET['brand'] ?? [];
 $selectedRetailers = $_GET['retailer'] ?? [];
 $selectedColors = $_GET['color'] ?? [];
 $selectedMovement = $_GET['movement'] ?? [];
+$selectedCaseWidths = $_GET['case_width'] ?? [];
 
 // Returns watch IDs matching the selected sidebar filters
 function filterWatches(mysqli $conn, array $filters): array
@@ -98,6 +99,51 @@ function filterWatches(mysqli $conn, array $filters): array
         }
     }
 
+    // Case Width
+    if (!empty($filters['case_width']) && is_array($filters['case_width'])) {
+        $caseWidthConditions = [];
+
+        foreach ($filters['case_width'] as $caseWidth) {
+            switch ($caseWidth) {
+                case 'under_26':
+                    $caseWidthConditions[] = "w.case_diameter_mm < 26";
+                    break;
+
+                case '26_30':
+                    $caseWidthConditions[] = "w.case_diameter_mm >= 26 AND w.case_diameter_mm < 30";
+                    break;
+
+                case '30_34':
+                    $caseWidthConditions[] = "w.case_diameter_mm >= 30 AND w.case_diameter_mm < 34";
+                    break;
+
+                case '34_38':
+                    $caseWidthConditions[] = "w.case_diameter_mm >= 34 AND w.case_diameter_mm < 38";
+                    break;
+
+                case '38_42':
+                    $caseWidthConditions[] = "w.case_diameter_mm >= 38 AND w.case_diameter_mm < 42";
+                    break;
+
+                case '42_46':
+                    $caseWidthConditions[] = "w.case_diameter_mm >= 42 AND w.case_diameter_mm < 46";
+                    break;
+
+                case '46_50':
+                    $caseWidthConditions[] = "w.case_diameter_mm >= 46 AND w.case_diameter_mm < 50";
+                    break;
+
+                case '50_plus':
+                    $caseWidthConditions[] = "w.case_diameter_mm >= 50";
+                    break;
+            }
+        }
+
+        if (!empty($caseWidthConditions)) {
+            $sql .= " AND (" . implode(' OR ', $caseWidthConditions) . ")";
+        }
+    }
+
     // Filter against retailer price, ignoring retailer records without a valid price
     if (!empty($filters['max_price']) && is_numeric($filters['max_price'])) {
         $sql .= " AND wr.price IS NOT NULL AND wr.price <= ?";
@@ -158,4 +204,3 @@ $retailers = [];
 while ($row = $retailerResult->fetch_assoc()) {
     $retailers[] = $row;
 }
-?>
