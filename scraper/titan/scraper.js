@@ -2,6 +2,16 @@ const { chromium } = require("playwright");
 const fs = require("fs");
 const path = require("path");
 
+require("dotenv").config({
+  path: path.resolve(__dirname, "../../.env"),
+});
+
+const SCRAPER_API_KEY = process.env.SCRAPER_API_KEY;
+
+if (!SCRAPER_API_KEY) {
+  throw new Error("SCRAPER_API_KEY is not configured in .env.");
+}
+
 // WatchShelf scraper API
 const QUEUE_URL = "http://localhost/WatchShelf/api/scraper/titan/queue.php";
 const UPDATE_URL = "http://localhost/WatchShelf/api/scraper/titan/update.php";
@@ -11,9 +21,6 @@ const UPDATE_URL = "http://localhost/WatchShelf/api/scraper/titan/update.php";
 const QUEUE_URL = "https://watchshelf.in/api/scraper/titan/queue.php";
 const UPDATE_URL = "https://watchshelf.in/api/scraper/titan/update.php";
 */
-
-// Scraper authentication
-const SCRAPER_API_KEY = "mY_sCrApEr-KeY";
 
 // Logging
 const LOG_DIRECTORY = path.join(__dirname, "logs");
@@ -214,7 +221,10 @@ async function sendUpdates(results) {
     for (const variant of variants) {
       writeLog("--------------------------------------------------");
 
-      const productName = `${variant.brand} ` + `${variant.model_name} ` + `(${variant.color_name})`;
+      const productName =
+        `${variant.brand} ` +
+        `${variant.model_name} ` +
+        `(${variant.color_name})`;
 
       writeLog(
         `Starting scrape for ${productName} ` +

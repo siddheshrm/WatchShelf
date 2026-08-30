@@ -1,4 +1,42 @@
 <?php
+
+$envFile = dirname(__DIR__) . '/.env';
+
+if (is_file($envFile)) {
+    $lines = file(
+        $envFile,
+        FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES
+    );
+
+    foreach ($lines as $line) {
+        $line = trim($line);
+
+        if ($line === '' || $line[0] === '#') {
+            continue;
+        }
+
+        $separatorPosition = strpos($line, '=');
+
+        if ($separatorPosition === false) {
+            continue;
+        }
+
+        $name = trim(substr($line, 0, $separatorPosition));
+        $value = trim(substr($line, $separatorPosition + 1));
+
+        if ($name === '') {
+            continue;
+        }
+
+        // Remove optional surrounding quotes.
+        if (strlen($value) >= 2 && (($value[0] === '"' && $value[strlen($value) - 1] === '"') || ($value[0] === "'" && $value[strlen($value) - 1] === "'"))) {
+            $value = substr($value, 1, -1);
+        }
+
+        $_ENV[$name] = $value;
+    }
+}
+
 // Application information
 define('SITE_NAME', 'WatchShelf');
 define('CONTACT_EMAIL', 'support@watchshelf.in');
@@ -35,7 +73,7 @@ define('ITEMS_PER_PAGE', 32);
 define('MAX_WATCH_IMAGES', 5);
 
 // Exchange Rate API Key
-define('EXCHANGE_RATE_API_KEY', '13b2bf183d5a19701bcf3bcb');
+define('EXCHANGE_RATE_API_KEY', $_ENV['EXCHANGE_RATE_API_KEY'] ?? '');
 
 // Scraper API
-define('SCRAPER_API_KEY', 'mY_sCrApEr-KeY');
+define('SCRAPER_API_KEY', $_ENV['SCRAPER_API_KEY'] ?? '');
