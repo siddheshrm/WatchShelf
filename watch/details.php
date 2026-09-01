@@ -3,9 +3,15 @@ require_once '../config/connection.php';
 $COLOR_MAP = require_once '../config/colormap.php';
 require_once '../config/app.php';
 
-// Validate Request 
-if (!isset($_GET['id']) || !is_numeric($_GET['id'])) {
-    die("Invalid watch.");
+// Validate Request
+if (
+    !isset($_GET['id']) ||
+    !ctype_digit((string) $_GET['id']) ||
+    (int) $_GET['id'] <= 0
+) {
+    http_response_code(404);
+    require __DIR__ . '/../404.php';
+    exit;
 }
 
 $id = (int) $_GET['id'];
@@ -18,8 +24,10 @@ $stmt->execute();
 
 $result = $stmt->get_result();
 
-if ($result->num_rows == 0) {
-    die("Watch not found.");
+if ($result->num_rows === 0) {
+    http_response_code(404);
+    require __DIR__ . '/../404.php';
+    exit;
 }
 
 $watch = $result->fetch_assoc();

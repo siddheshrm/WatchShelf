@@ -614,3 +614,34 @@ p {
 
   border-color: var(--color-accent);
 }
+
+/* 404 PAGE */
+
+.error-page {
+  padding-block: var(--space-xxl);
+}
+
+.error-page .empty-state {
+  max-width: var(--content-width);
+  margin-inline: auto;
+}
+
+.error-home-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  margin-top: var(--space-lg);
+  padding: 0.75rem 1.25rem;
+
+  background: var(--color-accent);
+  color: var(--color-text-inverse);
+
+  border-radius: var(--radius-md);
+
+  font-weight: var(--font-weight-medium);
+}
+
+.error-home-link:hover {
+  background: var(--color-accent-hover);
+}
