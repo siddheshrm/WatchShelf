@@ -35,9 +35,27 @@ RewriteRule ^sitemap\.xml\.php$ /sitemap.xml [R=301,L]
 RewriteRule ^sitemap\.xml$ sitemap.xml.php [L]
 
 # --------------------------------------------------
+# Watch product URLs
+# --------------------------------------------------
+
+# Internally rewrite clean product URLs:
+# /watch/sonata-festive-quartz-analog-with-date-320
+# → /watch/details.php?id=320&slug=sonata-festive-quartz-analog-with-date
+
+RewriteRule ^watch/(.+)-([0-9]+)$ watch/details.php?id=$2&slug=$1 [L,QSA]
+
+# --------------------------------------------------
 # Do not rewrite existing files/directories
 # --------------------------------------------------
 
 RewriteCond %{REQUEST_FILENAME} -f [OR]
 RewriteCond %{REQUEST_FILENAME} -d
 RewriteRule ^ - [L]
+
+# --------------------------------------------------
+# Restrict .env from downloading
+# --------------------------------------------------
+
+<FilesMatch "^\.env">
+    Require all denied
+</FilesMatch>

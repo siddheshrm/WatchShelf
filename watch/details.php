@@ -24,6 +24,17 @@ if ($result->num_rows == 0) {
 
 $watch = $result->fetch_assoc();
 
+$expectedSlug = createWatchSlug($watch['brand'], $watch['model_name']);
+$watchUrl = getWatchUrl($id, $watch['brand'], $watch['model_name']);
+
+$requestedSlug = $_GET['slug'] ?? null;
+
+// Redirect legacy or incorrect product URLs to the canonical URL.
+if ($requestedSlug === null || $requestedSlug !== $expectedSlug) {
+    header('Location: ' . $watchUrl, true, 301);
+    exit;
+}
+
 // Load all images from the default variant's image folder
 $images = [];
 
@@ -120,7 +131,7 @@ $page_title = $watch['brand'] . " " . $watch['model_name'];
 $og_type = 'product';
 $og_title = $page_title;
 $og_description = "Compare prices and retailers for {$page_title} on WatchShelf.";
-$og_url = SITE_URL . '/watch/details.php?id=' . $id;
+$og_url = $watchUrl;
 $og_image = $images[0] ?? DEFAULT_WATCH_IMAGE;
 
 $page_description = sprintf(
@@ -129,7 +140,7 @@ $page_description = sprintf(
     $watch['model_name']
 );
 
-$page_canonical = SITE_URL . '/watch/details.php?id=' . $id;
+$page_canonical = $watchUrl;
 $page_robots = 'index, follow';
 
 // Calculate Discount
@@ -174,6 +185,7 @@ $productSchema = [
     '@type' => 'Product',
 
     'name' => $page_title,
+    'url' => $page_canonical,
     'image' => array_values($images),
     'description' => $page_description,
 

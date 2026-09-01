@@ -103,7 +103,7 @@ $result = $stmt->get_result(); ?>
                     }
                     ?>
 
-                    <a href="<?= BASE_URL ?>/watch/details.php?id=<?= (int) $relatedWatch['id'] ?>"
+                    <a href="<?= htmlspecialchars(getWatchPath((int) $relatedWatch['id'], $relatedWatch['brand'], $relatedWatch['model_name'])) ?>"
                         class="related-card"
                         title="View <?= htmlspecialchars($relatedWatch['brand'] . ' ' . $relatedWatch['model_name']) ?>">
                         <div class="watch-image image-frame">

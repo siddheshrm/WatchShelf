@@ -77,3 +77,27 @@ define('EXCHANGE_RATE_API_KEY', $_ENV['EXCHANGE_RATE_API_KEY'] ?? '');
 
 // Scraper API
 define('SCRAPER_API_KEY', $_ENV['SCRAPER_API_KEY'] ?? '');
+
+// Watch URL helpers
+function createWatchSlug(string $brand, string $model): string
+{
+    $slug = trim($brand . ' ' . $model);
+    $slug = strtolower($slug);
+    $slug = preg_replace('/[^a-z0-9]+/', '-', $slug);
+
+    return trim($slug, '-');
+}
+
+function getWatchPath(int $id, string $brand, string $model): string
+{
+    $slug = createWatchSlug($brand, $model);
+
+    return BASE_URL . '/watch/' . $slug . '-' . $id;
+}
+
+function getWatchUrl(int $id, string $brand, string $model): string
+{
+    $slug = createWatchSlug($brand, $model);
+
+    return SITE_URL . '/watch/' . $slug . '-' . $id;
+}

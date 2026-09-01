@@ -393,8 +393,14 @@ include 'includes/header.php';
                             }
                             ?>
 
+                            <!-- Define $watchPath -->
+                            <?php
+                            $watchPath = getWatchPath((int) $watch['id'], $watch['brand'], $watch['model_name']);
+                            ?>
+
                             <article class="watch-card">
-                                <a class="watch-card-link" href="<?= BASE_URL ?>/watch/details.php?id=<?= $watch['id'] ?>">
+                                <a class="watch-card-link" href="<?= htmlspecialchars($watchPath) ?>">
+
                                     <?php
                                     $imagePath = DEFAULT_WATCH_IMAGE;
 
@@ -428,7 +434,7 @@ include 'includes/header.php';
                                 </a>
 
                                 <button type="button"
-                                    onclick="window.location.href='<?= BASE_URL ?>/watch/details.php?id=<?= $watch['id'] ?>'">
+                                    onclick="window.location.href='<?= htmlspecialchars($watchPath) ?>'">
                                     Buying Options
                                 </button>
                             </article>

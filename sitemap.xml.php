@@ -73,7 +73,7 @@ echo '<?xml version="1.0" encoding="UTF-8"?>';
      * Retailer price/availability changes in watch_variants do not
      * represent a significant modification to the watch page itself.
      */
-    $watchQuery = "SELECT id, created_at
+    $watchQuery = "SELECT id, brand, model_name, created_at
                                 FROM watches
                                 WHERE is_active = 1
                                 ORDER BY id ASC";
@@ -82,11 +82,9 @@ echo '<?xml version="1.0" encoding="UTF-8"?>';
 
     if ($watchResult):
         while ($watch = $watchResult->fetch_assoc()):
-            $watchUrl = SITE_URL . '/watch/details.php?id=' . (int) $watch['id'];
+            $watchUrl = getWatchUrl((int) $watch['id'], $watch['brand'], $watch['model_name']);
 
-            $createdAt = $watch['created_at']
-                ? date('c', strtotime($watch['created_at']))
-                : null;
+            $createdAt = $watch['created_at'] ? date('c', strtotime($watch['created_at'])) : null;
     ?>
             <url>
                 <loc><?= xmlEscape($watchUrl) ?></loc>
