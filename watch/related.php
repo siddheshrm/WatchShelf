@@ -127,6 +127,10 @@ $result = $stmt->get_result(); ?>
                                 <p class="related-card-price">
                                     From ₹<?= number_format($relatedWatch['best_price']) ?>
                                 </p>
+                            <?php else: ?>
+                                <p class="related-card-price related-card-unavailable">
+                                    Currently unavailable
+                                </p>
                             <?php endif; ?>
                         </div>
                     </a>

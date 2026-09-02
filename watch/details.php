@@ -306,14 +306,22 @@ include '../includes/header.php';
         <!-- Breadcrumb -->
         <nav class="product-breadcrumb" aria-label="Breadcrumb">
             <a href="<?= SITE_URL ?>/">Home</a>
-            <span>&gt;</span>
+
+            <span class="breadcrumb-separator" aria-hidden="true">
+                <i class="fa-solid fa-chevron-right"></i>
+            </span>
 
             <a href="<?= SITE_URL ?>/?brand[]=<?= urlencode($watch['brand']) ?>">
                 <?= htmlspecialchars($watch['brand']) ?>
             </a>
-            <span>&gt;</span>
 
-            <span><?= htmlspecialchars($watch['model_name']) ?></span>
+            <span class="breadcrumb-separator" aria-hidden="true">
+                <i class="fa-solid fa-chevron-right"></i>
+            </span>
+
+            <span aria-current="page">
+                <?= htmlspecialchars($watch['model_name']) ?>
+            </span>
         </nav>
 
         <section class="product-page">
@@ -334,22 +342,42 @@ include '../includes/header.php';
                 <p class="product-brand"><?= htmlspecialchars($watch['brand']) ?></p>
                 <h1 class="product-title"><?= htmlspecialchars($watch['model_name']) ?></h1>
 
+                <!-- Product Statuses -->
+                <?php if (
+                    $watch['is_featured']
+                    || $watch['owner_status'] === OWNER_STATUS_OWNED
+                    || $watch['owner_status'] === OWNER_STATUS_INTERESTED
+                ): ?>
+
+                    <div class="product-statuses">
+
+                        <?php if ($watch['is_featured']): ?>
+                            <span class="product-status product-status-featured">
+                                <i class="fa-solid fa-star" aria-hidden="true"></i>
+                                <?= FEATURED_LABEL ?>
+                            </span>
+                        <?php endif; ?>
+
+                        <?php if ($watch['owner_status'] === OWNER_STATUS_OWNED): ?>
+                            <span class="product-status product-status-owned">
+                                <i class="fa-solid fa-box-archive" aria-hidden="true"></i>
+                                <?= OWNER_COLLECTION_LABEL ?>
+                            </span>
+                        <?php elseif ($watch['owner_status'] === OWNER_STATUS_INTERESTED): ?>
+                            <span class="product-status product-status-wishlist">
+                                <i class="fa-solid fa-bookmark" aria-hidden="true"></i>
+                                <?= OWNER_WISHLIST_LABEL ?>
+                            </span>
+                        <?php endif; ?>
+
+                    </div>
+
+                <?php endif; ?>
+
                 <?php if (!empty($productDescription)): ?>
                     <p class="product-description">
                         <?= htmlspecialchars($productDescription) ?>
                     </p>
-                <?php endif; ?>
-
-                <!-- Featured Status -->
-                <?php if ($watch['is_featured']): ?>
-                    <p class="product-badge featured"><?= FEATURED_LABEL ?></p>
-                <?php endif; ?>
-
-                <!-- Owner Status -->
-                <?php if ($watch['owner_status'] === OWNER_STATUS_OWNED): ?>
-                    <p class="product-badge owned"><?= OWNER_COLLECTION_LABEL ?></p>
-                <?php elseif ($watch['owner_status'] === OWNER_STATUS_INTERESTED): ?>
-                    <p class="product-badge wishlist"><?= OWNER_WISHLIST_LABEL ?></p>
                 <?php endif; ?>
 
                 <?php
@@ -422,7 +450,10 @@ include '../includes/header.php';
                     <?php if (!empty($watch['warranty_years'])): ?>
                         <div class="highlight-item">
                             <span>Warranty</span>
-                            <strong><?= $watch['warranty_years'] ?> Years</strong>
+                            <strong>
+                                <?= $watch['warranty_years'] ?>
+                                <?= (float) $watch['warranty_years'] === 1.0 ? 'Year' : 'Years' ?>
+                            </strong>
                         </div>
                     <?php endif; ?>
 
@@ -459,21 +490,45 @@ include '../includes/header.php';
                         <?php if ($bestRetailer): ?>
 
                             <div class="best-offer">
-                                <p class="best-offer-text">Available at
-                                    <a href="<?= htmlspecialchars($bestRetailer['affiliate_url'] ?: $bestRetailer['base_url']) ?>"
-                                        target="_blank" rel="noopener noreferrer" class="retailer-link">
-                                        <?= htmlspecialchars($bestRetailer['retailer_name']) ?>
-                                    </a>
-                                    for
-                                    <strong>₹<?= number_format($bestRetailer['price'], 0) ?></strong>
+                                <span class="best-offer-label">Best Price</span>
 
-                                    <?php if ($discountAmount > 0): ?>
-                                        <span class="mrp">
-                                            <del>₹<?= number_format($watch['mrp'], 0) ?></del>
-                                        </span>
-                                        <span class="discount-badge"><?= $discountPercent ?>% off</span>
-                                    <?php endif; ?>
-                                </p>
+                                <div class="best-offer-main">
+
+                                    <div class="best-offer-info">
+                                        <a href="<?= htmlspecialchars($bestRetailer['affiliate_url'] ?: $bestRetailer['base_url']) ?>"
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            class="retailer-link">
+                                            <?= htmlspecialchars($bestRetailer['retailer_name']) ?>
+                                        </a>
+
+                                        <div class="best-offer-pricing">
+                                            <strong class="best-offer-price">
+                                                ₹<?= number_format($bestRetailer['price'], 0) ?>
+                                            </strong>
+
+                                            <?php if ($discountAmount > 0): ?>
+                                                <del class="mrp">
+                                                    ₹<?= number_format($watch['mrp'], 0) ?>
+                                                </del>
+
+                                                <span class="discount-badge">
+                                                    <?= $discountPercent ?>% off
+                                                </span>
+                                            <?php endif; ?>
+                                        </div>
+                                    </div>
+
+                                    <a href="<?= htmlspecialchars($bestRetailer['affiliate_url'] ?: $bestRetailer['base_url']) ?>"
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        class="best-offer-button">
+                                        View Deal
+                                        <i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i>
+                                    </a>
+
+                                </div>
+
                             </div>
 
                             <?php if (count($currentRetailers) > 1): ?>
@@ -521,19 +576,22 @@ include '../includes/header.php';
                     <div class="product-colors">
                         <h3>Available Colors</h3>
 
-                        <?php foreach ($colorVariants as $variant):
-                            $color = ucwords(strtolower($variant['color_name']));
-                            $watchColor = $COLOR_MAP[$color] ?? '#555555';
-                        ?>
+                        <div class="color-options">
+                            <?php foreach ($colorVariants as $variant):
+                                $color = ucwords(strtolower($variant['color_name']));
+                                $watchColor = $COLOR_MAP[$color] ?? '#555555';
+                            ?>
 
-                            <button type="button" class="color-item <?= $variant['is_default'] ? 'active' : '' ?>"
-                                data-variant-id="<?= $variant['id'] ?>"
-                                data-color="<?= htmlspecialchars(strtolower(trim($variant['color_name']))) ?>">
+                                <button type="button" class="color-item <?= $variant['is_default'] ? 'active' : '' ?>"
+                                    data-variant-id="<?= $variant['id'] ?>"
+                                    data-color="<?= htmlspecialchars(strtolower(trim($variant['color_name']))) ?>">
 
-                                <span class="color-circle" style="background-color: <?= htmlspecialchars($watchColor) ?>"></span>
-                                <span><?= htmlspecialchars($color) ?></span>
-                            </button>
-                        <?php endforeach; ?>
+                                    <span class="color-circle" style="background: <?= htmlspecialchars($watchColor) ?>"></span>
+                                    <span><?= htmlspecialchars($color) ?></span>
+                                </button>
+                            <?php endforeach; ?>
+                        </div>
+
                     </div>
                 <?php endif; ?>
             </div>
@@ -569,14 +627,19 @@ include '../includes/header.php';
         <section class="product-guides">
             <div class="site-container">
 
-                <h2>Explore More Watch Guides</h2>
+                <div class="product-guides-header">
+                    <h2>Explore More Watch Guides</h2>
+                    <p>Continue browsing related watch collections.</p>
+                </div>
 
                 <div class="quick-links-list">
 
                     <?php foreach ($productQuickLinks as $slug => $quickLink): ?>
 
-                        <a href="<?= BASE_URL ?>/index.php?quick_link=<?= urlencode($slug) ?>">
-                            <?= htmlspecialchars($quickLink['title']) ?>
+                        <a class="quick-link-item"
+                            href="<?= BASE_URL ?>/index.php?quick_link=<?= urlencode($slug) ?>">
+                            <span><?= htmlspecialchars($quickLink['title']) ?></span>
+                            <span class="quick-link-arrow" aria-hidden="true">→</span>
                         </a>
 
                     <?php endforeach; ?>

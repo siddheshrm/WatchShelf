@@ -63,9 +63,9 @@ define('OWNER_STATUS_OWNED', 'owned');
 define('OWNER_STATUS_INTERESTED', 'interested');
 
 // Owner status labels
-define('OWNER_COLLECTION_LABEL', "⌚ From Developer's Collection");
-define('OWNER_WISHLIST_LABEL', "👀 On Developer's Wishlist");
-define('FEATURED_LABEL', '⭐ Featured');
+define('OWNER_COLLECTION_LABEL', "From Developer's Collection");
+define('OWNER_WISHLIST_LABEL', "On Developer's Wishlist");
+define('FEATURED_LABEL', "Featured");
 
 // Application defaults
 define('DEFAULT_CURRENCY', '₹');

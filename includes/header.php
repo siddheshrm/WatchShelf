@@ -63,14 +63,15 @@ $og_url = $og_url ?? $page_canonical;
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
     <link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet">
+
+    <script src="https://kit.fontawesome.com/9dd0cb4077.js" crossorigin="anonymous"></script>
+
     <link rel="icon" href="<?= SITE_URL ?>/assets/images/logo.svg" sizes="any">
 
     <link rel="stylesheet" href="<?= CSS_URL ?>/variables.css">
     <link rel="stylesheet" href="<?= CSS_URL ?>/style.css">
-    <link rel="stylesheet" href="<?= CSS_URL ?>/temp/sidebar.css">
-    <link rel="stylesheet" href="<?= CSS_URL ?>/temp/details.css">
-    <link rel="stylesheet" href="<?= CSS_URL ?>/temp/related.css">
 </head>
 
 <body>

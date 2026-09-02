@@ -27,6 +27,8 @@
   --color-surface: #e6ccb2;
   --color-highlight: #dc9752;
 
+  --color-input-background: #ffffff;
+
   /* CARDS */
   --color-card: #f8f3ee;
   --color-card-content: #e6ccb2;
@@ -51,6 +53,15 @@
   --color-warning: #e9b949;
   --color-error: #d95d39;
   --color-info: var(--color-accent);
+
+  /* STATUS COLORS */
+  --color-featured-bg: rgba(233, 185, 73, 0.2);
+  --color-featured: #d99a00;
+
+  --color-owned-bg: rgba(88, 129, 87, 0.16);
+
+  --color-wishlist: #d64545;
+  --color-wishlist-bg: rgba(214, 69, 69, 0.12);
 
   /* SPACING */
   --space-xs: 0.25rem;

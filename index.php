@@ -408,28 +408,61 @@ include 'includes/header.php';
                                         $imagePath = WATCH_IMAGE_URL . '/' . $watch['default_image_folder'] . '/1.webp';
                                     }
                                     ?>
-                                    <div class="watch-image image-frame">
-                                        <img src="<?= htmlspecialchars($imagePath) ?>"
-                                            alt="<?= htmlspecialchars($watch['brand'] . ' ' . $watch['model_name']) ?>" loading="lazy" onerror="this.onerror=null;this.src='<?= htmlspecialchars(DEFAULT_WATCH_IMAGE) ?>';">
-                                    </div>
 
-                                    <?php if ($watch['is_featured']): ?>
-                                        <p><?= FEATURED_LABEL ?></p>
-                                    <?php endif; ?>
+                                    <div class="watch-image image-frame">
+
+                                        <img
+                                            src="<?= htmlspecialchars($imagePath) ?>"
+                                            alt="<?= htmlspecialchars($watch['brand'] . ' ' . $watch['model_name']) ?>"
+                                            loading="lazy"
+                                            onerror="this.onerror=null;this.src='<?= htmlspecialchars(DEFAULT_WATCH_IMAGE) ?>';">
+
+                                        <?php if ($watch['is_featured']): ?>
+                                            <span
+                                                class="watch-image-badge watch-image-badge-featured"
+                                                title="Featured"
+                                                aria-label="Featured">
+                                                <i class="fa-solid fa-star" aria-hidden="true"></i>
+                                            </span>
+                                        <?php endif; ?>
+
+                                        <?php if ($watch['owner_status'] === OWNER_STATUS_OWNED): ?>
+
+                                            <span
+                                                class="watch-image-badge watch-image-badge-status watch-image-badge-owned"
+                                                title="<?= htmlspecialchars(OWNER_COLLECTION_LABEL) ?>"
+                                                aria-label="<?= htmlspecialchars(OWNER_COLLECTION_LABEL) ?>">
+                                                <i class="fa-solid fa-box-archive" aria-hidden="true"></i>
+                                            </span>
+
+                                        <?php elseif ($watch['owner_status'] === OWNER_STATUS_INTERESTED): ?>
+
+                                            <span
+                                                class="watch-image-badge watch-image-badge-status watch-image-badge-wishlist"
+                                                title="<?= htmlspecialchars(OWNER_WISHLIST_LABEL) ?>"
+                                                aria-label="<?= htmlspecialchars(OWNER_WISHLIST_LABEL) ?>">
+                                                <i class="fa-solid fa-bookmark" aria-hidden="true"></i>
+                                            </span>
+
+                                        <?php endif; ?>
+
+                                    </div>
 
                                     <h3><?= htmlspecialchars($watch['brand']) ?></h3>
                                     <h4><?= htmlspecialchars($watch['model_name']) ?></h4>
 
-                                    <?php if ($watch['owner_status'] === OWNER_STATUS_OWNED): ?>
-                                        <p><?= OWNER_COLLECTION_LABEL ?></p>
-                                    <?php elseif ($watch['owner_status'] === OWNER_STATUS_INTERESTED): ?>
-                                        <p><?= OWNER_WISHLIST_LABEL ?></p>
-                                    <?php endif; ?>
-
                                     <?php if ($watch['min_price'] !== null && $watch['min_price'] > 0): ?>
-                                        <p>From ₹<?= number_format($watch['min_price']) ?></p>
+
+                                        <p class="watch-price">
+                                            From ₹<?= number_format($watch['min_price']) ?>
+                                        </p>
+
                                     <?php else: ?>
-                                        <p>Currently unavailable to buy</p>
+
+                                        <p class="watch-unavailable">
+                                            Currently unavailable to buy
+                                        </p>
+
                                     <?php endif; ?>
                                 </a>
 
