@@ -5,6 +5,8 @@ const mainImage = document.getElementById("main-image");
 const nextButton = document.querySelector(".gallery-next");
 const prevButton = document.querySelector(".gallery-prev");
 const colorButtons = document.querySelectorAll(".color-item");
+const highlightsToggle = document.querySelector(".highlights-toggle");
+const highlightsContent = document.querySelector(".highlights-content");
 
 updateNavigation();
 
@@ -199,6 +201,17 @@ function formatPrice(price) {
 // Initial Buying Options
 if (selectedColor && variantsByColor[selectedColor]) {
   renderBuyingOptions(variantsByColor[selectedColor]);
+}
+
+// Top Highlights Toggle
+if (highlightsToggle && highlightsContent) {
+  highlightsToggle.addEventListener("click", () => {
+    const isExpanded = highlightsToggle.getAttribute("aria-expanded") === "true";
+
+    highlightsToggle.setAttribute("aria-expanded", String(!isExpanded));
+
+    highlightsContent.hidden = isExpanded;
+  });
 }
 
 // Event Listeners
