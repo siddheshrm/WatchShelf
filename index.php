@@ -319,6 +319,15 @@ include 'includes/header.php';
                         </p>
                     <?php endif; ?>
 
+                    <button
+                        type="button"
+                        class="filter-open-button"
+                        aria-controls="filter-sidebar"
+                        aria-expanded="false">
+                        <i class="fa-solid fa-filter" aria-hidden="true"></i>
+                        Filters
+                    </button>
+
                     <form action="index.php" method="GET" class="sort-form">
                         <!-- Preserve the current search and filter state by copying existing GET parameters into hidden inputs, excluding the sort parameter -->
                         <?php
@@ -553,3 +562,5 @@ include 'includes/header.php';
 </main>
 
 <?php include 'includes/footer.php'; ?>
+
+<script src="<?= JS_URL ?>/sidebar.js"></script>

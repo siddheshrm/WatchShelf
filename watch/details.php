@@ -570,31 +570,36 @@ include '../includes/header.php';
                         <?php endif; ?>
                     </div>
                 </div>
-
-                <?php if (!empty($colorVariants)): ?>
-                    <!-- Available Colors -->
-                    <div class="product-colors">
-                        <h3>Available Colors</h3>
-
-                        <div class="color-options">
-                            <?php foreach ($colorVariants as $variant):
-                                $color = ucwords(strtolower($variant['color_name']));
-                                $watchColor = $COLOR_MAP[$color] ?? '#555555';
-                            ?>
-
-                                <button type="button" class="color-item <?= $variant['is_default'] ? 'active' : '' ?>"
-                                    data-variant-id="<?= $variant['id'] ?>"
-                                    data-color="<?= htmlspecialchars(strtolower(trim($variant['color_name']))) ?>">
-
-                                    <span class="color-circle" style="background: <?= htmlspecialchars($watchColor) ?>"></span>
-                                    <span><?= htmlspecialchars($color) ?></span>
-                                </button>
-                            <?php endforeach; ?>
-                        </div>
-
-                    </div>
-                <?php endif; ?>
             </div>
+
+            <?php if (!empty($colorVariants)): ?>
+                <!-- Available Colors -->
+                <div class="product-colors">
+                    <h3>Available Colors</h3>
+
+                    <div class="color-options">
+                        <?php foreach ($colorVariants as $variant):
+                            $color = ucwords(strtolower($variant['color_name']));
+                            $watchColor = $COLOR_MAP[$color] ?? '#555555';
+                        ?>
+
+                            <button
+                                type="button"
+                                class="color-item <?= $variant['is_default'] ? 'active' : '' ?>"
+                                data-variant-id="<?= $variant['id'] ?>"
+                                data-color="<?= htmlspecialchars(strtolower(trim($variant['color_name']))) ?>">
+
+                                <span class="color-circle" style="background: <?= htmlspecialchars($watchColor) ?>"></span>
+
+                                <span class="color-name">
+                                    <?= htmlspecialchars($color) ?>
+                                </span>
+                            </button>
+                        <?php endforeach; ?>
+                    </div>
+
+                </div>
+            <?php endif; ?>
         </section>
 
         <!-- Product Data for JavaScript -->

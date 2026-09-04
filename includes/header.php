@@ -72,6 +72,7 @@ $og_url = $og_url ?? $page_canonical;
 
     <link rel="stylesheet" href="<?= CSS_URL ?>/variables.css">
     <link rel="stylesheet" href="<?= CSS_URL ?>/style.css">
+    <link rel="stylesheet" href="<?= CSS_URL ?>/responsive.css">
 </head>
 
 <body>

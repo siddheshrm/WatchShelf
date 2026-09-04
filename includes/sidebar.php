@@ -1,5 +1,14 @@
-<aside class="filter-sidebar">
-    <h2 class="filter-title">Filters</h2>
+<aside class="filter-sidebar" id="filter-sidebar">
+    <div class="filter-sidebar-header">
+        <h2 class="filter-title">Filters</h2>
+
+        <button
+            type="button"
+            class="filter-close-button"
+            aria-label="Close filters">
+            <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+        </button>
+    </div>
 
     <form action="index.php" method="GET" class="filter-form">
         <!-- Gender -->
@@ -194,4 +203,4 @@
     </form>
 </aside>
 
-<script src="<?= JS_URL ?>/sidebar.js"></script>
+<div class="filter-backdrop" aria-hidden="true"></div>

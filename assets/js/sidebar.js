@@ -1,3 +1,4 @@
+// Filter group Show More / Show Less
 document
   .querySelectorAll(".filter-group.filter-group-collapsible")
   .forEach((group) => {
@@ -54,3 +55,43 @@ document
       }
     });
   });
+
+// Tablet / Mobile Off-Canvas Filters
+const filterOpenButton = document.querySelector(".filter-open-button");
+const filterCloseButton = document.querySelector(".filter-close-button");
+const filterSidebar = document.querySelector(".filter-sidebar");
+const filterBackdrop = document.querySelector(".filter-backdrop");
+
+if (filterOpenButton && filterCloseButton && filterSidebar && filterBackdrop) {
+  const openFilters = () => {
+    filterSidebar.classList.add("is-open");
+    filterBackdrop.classList.add("is-visible");
+
+    filterOpenButton.setAttribute("aria-expanded", "true");
+
+    document.body.style.overflow = "hidden";
+
+    filterCloseButton.focus();
+  };
+
+  const closeFilters = () => {
+    filterSidebar.classList.remove("is-open");
+    filterBackdrop.classList.remove("is-visible");
+
+    filterOpenButton.setAttribute("aria-expanded", "false");
+
+    document.body.style.overflow = "";
+
+    filterOpenButton.focus();
+  };
+
+  filterOpenButton.addEventListener("click", openFilters);
+  filterCloseButton.addEventListener("click", closeFilters);
+  filterBackdrop.addEventListener("click", closeFilters);
+
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape" && filterSidebar.classList.contains("is-open")) {
+      closeFilters();
+    }
+  });
+}
