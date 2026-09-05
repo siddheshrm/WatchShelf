@@ -311,13 +311,15 @@ include 'includes/header.php';
 
             <section class="watch-catalog">
                 <div class="catalog-toolbar">
-                    <h2>Available Watches</h2>
+                    <div class="catalog-toolbar-info">
+                        <h2>Available Watches</h2>
 
-                    <?php if ($showResultCount): ?>
-                        <p class="catalog-result-count">
-                            <?= $totalWatches ?> watches found
-                        </p>
-                    <?php endif; ?>
+                        <?php if ($showResultCount): ?>
+                            <p class="catalog-result-count">
+                                <?= $totalWatches ?> watches found
+                            </p>
+                        <?php endif; ?>
+                    </div>
 
                     <button
                         type="button"
@@ -548,8 +550,14 @@ include 'includes/header.php';
                             continue;
                         } ?>
 
-                        <a href="<?= BASE_URL ?>/index.php?quick_link=<?= urlencode($relatedSlug) ?>">
-                            <?= htmlspecialchars($quickLinks[$relatedSlug]['title']) ?>
+                        <a href="<?= BASE_URL ?>/index.php?quick_link=<?= urlencode($relatedSlug) ?>"
+                            class="quick-link-item">
+
+                            <span>
+                                <?= htmlspecialchars($quickLinks[$relatedSlug]['title']) ?>
+                            </span>
+
+                            <i class="fa-solid fa-chevron-right quick-link-arrow" aria-hidden="true"></i>
                         </a>
 
                     <?php endforeach; ?>

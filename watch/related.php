@@ -86,7 +86,12 @@ $result = $stmt->get_result(); ?>
         </div>
 
         <div class="related-carousel">
-            <button type="button" class="carousel-btn carousel-btn-left" aria-label="Previous watches">&#10094;</button>
+            <button
+                type="button"
+                class="carousel-btn carousel-btn-left"
+                aria-label="Previous watches">
+                <i class="fa-solid fa-chevron-left" aria-hidden="true"></i>
+            </button>
 
             <div class="related-grid">
                 <?php while ($relatedWatch = $result->fetch_assoc()): ?>
@@ -138,7 +143,12 @@ $result = $stmt->get_result(); ?>
                 <?php endwhile; ?>
             </div>
 
-            <button type="button" class="carousel-btn carousel-btn-right" aria-label="Next watches">&#10095;</button>
+            <button
+                type="button"
+                class="carousel-btn carousel-btn-right"
+                aria-label="Next watches">
+                <i class="fa-solid fa-chevron-right" aria-hidden="true"></i>
+            </button>
         </div>
     </div>
 

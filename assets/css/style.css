@@ -408,6 +408,20 @@ p {
   margin: 0;
 }
 
+.catalog-toolbar-info {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+}
+
+.catalog-result-count {
+  margin: 0;
+
+  color: var(--color-text-light);
+
+  font-size: var(--font-size-sm);
+}
+
 .sort-form {
   display: flex;
   align-items: center;
@@ -1377,6 +1391,19 @@ p {
   color: var(--color-text-inverse);
 
   border-color: var(--color-accent);
+}
+
+/* RELATED QUICK LINKS */
+.related-quick-links {
+  padding-block: var(--space-xl);
+
+  border-top: 1px solid var(--color-border);
+}
+
+.related-quick-links h2 {
+  margin-bottom: var(--space-lg);
+
+  font-size: var(--font-size-xl);
 }
 
 /* PRODUCT WATCH GUIDES */

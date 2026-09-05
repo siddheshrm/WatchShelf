@@ -327,14 +327,24 @@ include '../includes/header.php';
         <section class="product-page">
             <!-- Product Images -->
             <div class="product-gallery">
-                <button type="button" class="gallery-prev">&#10094;</button>
+                <button
+                    type="button"
+                    class="gallery-prev"
+                    aria-label="Previous image">
+                    <i class="fa-solid fa-chevron-left" aria-hidden="true"></i>
+                </button>
 
                 <div class="watch-image image-frame">
                     <img id="main-image" class="product-main-image" src="<?= htmlspecialchars($images[0]) ?>"
                         alt="<?= htmlspecialchars($watch['brand'] . ' ' . $watch['model_name'] . ' Watch') ?>" loading="lazy">
                 </div>
 
-                <button type="button" class="gallery-next">&#10095;</button>
+                <button
+                    type="button"
+                    class="gallery-next"
+                    aria-label="Next image">
+                    <i class="fa-solid fa-chevron-right" aria-hidden="true"></i>
+                </button>
             </div>
 
             <div class="product-content">
