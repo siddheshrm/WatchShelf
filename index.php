@@ -28,12 +28,41 @@ switch ($sort) {
         $orderBy = "w.is_featured DESC, min_price ASC, w.brand ASC, w.model_name ASC, w.id ASC";
 }
 
-// Availability
-$includeOutOfStock = isset($_GET['include_out_of_stock']);
-
 // Pagination
 $productsPerPage = 28;
-$currentPage = max(1, (int) ($_GET['page'] ?? 1));
+$currentPage = 1;
+
+if (isset($_GET['page'])) {
+    $requestedPage = $_GET['page'];
+
+    // Reject malformed page parameters.
+    if (
+        !is_string($requestedPage) ||
+        !ctype_digit($requestedPage) ||
+        (int) $requestedPage < 1 ||
+        (string) (int) $requestedPage !== $requestedPage
+    ) {
+        require __DIR__ . '/404.php';
+        exit;
+    }
+
+    $currentPage = (int) $requestedPage;
+
+    // Remove redundant page=1 while preserving other query parameters.
+    if ($currentPage === 1) {
+        $params = $_GET;
+        unset($params['page']);
+
+        $redirectUrl = BASE_URL . '/';
+
+        if (!empty($params)) {
+            $redirectUrl .= '?' . http_build_query($params);
+        }
+
+        header('Location: ' . $redirectUrl, true, 301);
+        exit;
+    }
+}
 
 // Function to build pagination URLs while preserving existing query parameters
 function buildPaginationUrl(int $page): string
@@ -41,7 +70,7 @@ function buildPaginationUrl(int $page): string
     $params = $_GET;
     $params['page'] = $page;
 
-    return 'index.php?' . http_build_query($params);
+    return BASE_URL . '/?' . http_build_query($params);
 }
 
 // Generate pagination items for display
@@ -98,11 +127,16 @@ $hasCatalogueFilters =
     isset($_GET['max_price']) ||
     isset($_GET['sort']);
 
+// Determine the catalogue mode to display based on the request source
+$catalogueMode = 'default';
+
 // Determine which catalogue mode to display
 // Request source: Search / Quick Link / Filters / Default
 
 // Search
 if (isset($_GET['search_submit']) && !empty(trim($_GET['search'] ?? ''))) {
+    $catalogueMode = 'search';
+
     $watchIds = searchWatches($conn, $_GET['search']);
 
     if (empty($watchIds)) {
@@ -133,6 +167,7 @@ if (isset($_GET['search_submit']) && !empty(trim($_GET['search'] ?? ''))) {
 
     // Quick Link
 } elseif (isset($_GET['quick_link']) && isset($quickLinks[$_GET['quick_link']])) {
+    $catalogueMode = 'quick_link';
 
     // Apply quick-link catalogue logic
     $quickLink = $quickLinks[$_GET['quick_link']];
@@ -142,11 +177,7 @@ if (isset($_GET['search_submit']) && !empty(trim($_GET['search'] ?? ''))) {
 
     $page_robots = 'index, follow';
 
-    if ($currentPage > 1) {
-        $page_canonical = SITE_URL . '/?quick_link=' . urlencode($_GET['quick_link']) . '&page=' . $currentPage;
-    } else {
-        $page_canonical = SITE_URL . '/?quick_link=' . urlencode($_GET['quick_link']);
-    }
+    $page_canonical = SITE_URL . '/?quick_link=' . urlencode($_GET['quick_link']);
 
     $og_type = 'website';
     $og_title = $page_title;
@@ -165,6 +196,7 @@ if (isset($_GET['search_submit']) && !empty(trim($_GET['search'] ?? ''))) {
 
     // Filters
 } elseif ($hasCatalogueFilters) {
+    $catalogueMode = 'filter';
 
     $includeOutOfStock = isset($_GET['include_out_of_stock']);
     $watchIds = filterWatches($conn, $_GET);
@@ -215,9 +247,33 @@ if (empty($watchIds)) {
     $totalWatches = count($watchIds);
     $totalPages = (int) ceil($totalWatches / $productsPerPage);
 
-    // Prevent invalid page numbers from requesting an empty page.
+    // Reject catalogue page numbers that do not exist.
     if ($currentPage > $totalPages) {
-        $currentPage = $totalPages;
+        require __DIR__ . '/404.php';
+        exit;
+    }
+
+    // Finalize SEO metadata for valid paginated catalogue pages.
+    if ($currentPage > 1) {
+        if ($catalogueMode === 'default') {
+            $page_title = "Budget Watches - Page {$currentPage}";
+            $page_canonical = SITE_URL . '/?page=' . $currentPage;
+
+            $og_title = "Budget Watches - Page {$currentPage} | WatchShelf";
+            $og_url = $page_canonical;
+        } elseif ($catalogueMode === 'quick_link') {
+            $page_title = $quickLink['title'] . " - Page {$currentPage}";
+
+            $page_canonical =
+                SITE_URL .
+                '/?quick_link=' .
+                urlencode($_GET['quick_link']) .
+                '&page=' .
+                $currentPage;
+
+            $og_title = $page_title . ' | WatchShelf';
+            $og_url = $page_canonical;
+        }
     }
 
     // Generate pagination items for display

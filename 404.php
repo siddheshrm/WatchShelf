@@ -4,7 +4,14 @@ require_once __DIR__ . '/config/app.php';
 http_response_code(404);
 
 $page_title = "Page Not Found";
+$page_description = "The page you're looking for doesn't exist or may have been moved.";
 $page_robots = 'noindex, follow';
+$page_canonical = SITE_URL . '/';
+
+$og_type = 'website';
+$og_title = 'Page Not Found | WatchShelf';
+$og_description = $page_description;
+$og_url = SITE_URL . '/';
 
 include __DIR__ . '/includes/header.php';
 ?>
