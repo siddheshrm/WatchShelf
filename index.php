@@ -35,12 +35,49 @@ $includeOutOfStock = isset($_GET['include_out_of_stock']);
 $productsPerPage = 28;
 $currentPage = max(1, (int) ($_GET['page'] ?? 1));
 
+// Function to build pagination URLs while preserving existing query parameters
 function buildPaginationUrl(int $page): string
 {
     $params = $_GET;
     $params['page'] = $page;
 
     return 'index.php?' . http_build_query($params);
+}
+
+// Generate pagination items for display
+$paginationItems = [];
+
+function getPaginationItems(int $currentPage, int $totalPages, int $radius = 1): array
+{
+    if ($totalPages <= 1) {
+        return [];
+    }
+
+    $pages = [1, $totalPages];
+
+    $startPage = max(1, $currentPage - $radius);
+    $endPage = min($totalPages, $currentPage + $radius);
+
+    for ($page = $startPage; $page <= $endPage; $page++) {
+        $pages[] = $page;
+    }
+
+    $pages = array_values(array_unique($pages));
+    sort($pages);
+
+    $items = [];
+    $previousPage = null;
+
+    foreach ($pages as $page) {
+        if ($previousPage !== null && $page > $previousPage + 1) {
+            $items[] = 'ellipsis';
+        }
+
+        $items[] = $page;
+        $previousPage = $page;
+    }
+
+    return $items;
 }
 
 $emptyResult = false;
@@ -182,6 +219,9 @@ if (empty($watchIds)) {
     if ($currentPage > $totalPages) {
         $currentPage = $totalPages;
     }
+
+    // Generate pagination items for display
+    $paginationItems = getPaginationItems($currentPage, $totalPages);
 
     // Sort the complete result set before pagination.
     // This ensures sorting is applied consistently across all pages.
@@ -497,35 +537,47 @@ include 'includes/header.php';
                     <nav class="pagination" aria-label="Catalogue pagination">
 
                         <?php if ($currentPage > 1): ?>
-                            <a class="pagination-link"
+                            <a class="pagination-link pagination-prev"
                                 href="<?= htmlspecialchars(buildPaginationUrl($currentPage - 1)) ?>"
                                 aria-label="Previous page">
-                                Previous
+
+                                <i class="fa-solid fa-chevron-left" aria-hidden="true"></i>
+                                <span class="pagination-label">Previous</span>
                             </a>
                         <?php endif; ?>
 
-                        <?php for ($page = 1; $page <= $totalPages; $page++): ?>
-                            <?php if ($page === $currentPage): ?>
+                        <?php foreach ($paginationItems as $item): ?>
+
+                            <?php if ($item === 'ellipsis'): ?>
+
+                                <span class="pagination-ellipsis" aria-hidden="true">
+                                    &hellip;
+                                </span>
+
+                            <?php elseif ($item === $currentPage): ?>
 
                                 <span class="pagination-link active" aria-current="page">
-                                    <?= $page ?>
+                                    <?= $item ?>
                                 </span>
 
                             <?php else: ?>
 
                                 <a class="pagination-link"
-                                    href="<?= htmlspecialchars(buildPaginationUrl($page)) ?>">
-                                    <?= $page ?>
+                                    href="<?= htmlspecialchars(buildPaginationUrl($item)) ?>">
+                                    <?= $item === $totalPages ? 'Last' : $item ?>
                                 </a>
 
                             <?php endif; ?>
-                        <?php endfor; ?>
+
+                        <?php endforeach; ?>
 
                         <?php if ($currentPage < $totalPages): ?>
-                            <a class="pagination-link"
+                            <a class="pagination-link pagination-next"
                                 href="<?= htmlspecialchars(buildPaginationUrl($currentPage + 1)) ?>"
                                 aria-label="Next page">
-                                Next
+
+                                <span class="pagination-label">Next</span>
+                                <i class="fa-solid fa-chevron-right" aria-hidden="true"></i>
                             </a>
                         <?php endif; ?>
 

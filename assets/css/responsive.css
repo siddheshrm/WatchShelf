@@ -491,6 +491,47 @@
     gap: var(--space-sm);
   }
 
+  /* PAGINATION */
+  .pagination {
+    gap: var(--space-xs);
+
+    margin-top: var(--space-lg);
+  }
+
+  .pagination-link {
+    min-width: 2.25rem;
+    height: 2.25rem;
+
+    padding-inline: var(--space-sm);
+
+    font-size: var(--font-size-sm);
+  }
+
+  .pagination-prev,
+  .pagination-next {
+    width: 2.25rem;
+    min-width: 2.25rem;
+
+    padding: 0;
+  }
+
+  .pagination-prev .pagination-label,
+  .pagination-next .pagination-label {
+    display: none;
+  }
+
+  .pagination-prev i,
+  .pagination-next i {
+    font-size: var(--font-size-xs);
+  }
+
+  .pagination-ellipsis {
+    min-width: 1rem;
+    height: 2.25rem;
+
+    font-size: var(--font-size-sm);
+  }
+
   /* STATIC PAGE CONTENT */
   .page-content {
     padding: var(--space-xl) 0;
