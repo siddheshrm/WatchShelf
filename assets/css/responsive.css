@@ -306,6 +306,17 @@
     min-width: 0;
   }
 
+  .site-nav-list {
+    gap: var(--space-lg);
+  }
+
+  .theme-toggle {
+    width: 2.25rem;
+    height: 2.25rem;
+
+    font-size: var(--font-size-sm);
+  }
+
   /* CATALOG LAYOUT */
   .catalog-layout {
     gap: var(--space-lg);

@@ -28,6 +28,29 @@ $og_url = $og_url ?? $page_canonical;
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
+    <script>
+        (() => {
+            let theme = 'light';
+
+            try {
+                const savedTheme = localStorage.getItem('watchshelf-theme');
+
+                if (savedTheme === 'light' || savedTheme === 'dark') {
+                    theme = savedTheme;
+                } else if (
+                    window.matchMedia &&
+                    window.matchMedia('(prefers-color-scheme: dark)').matches
+                ) {
+                    theme = 'dark';
+                }
+            } catch (error) {
+                // Fall back to the light theme if storage is unavailable.
+            }
+
+            document.documentElement.dataset.theme = theme;
+        })();
+    </script>
+
     <title><?= htmlspecialchars($page_title) ?> | <?= htmlspecialchars($site_name) ?></title>
 
     <meta name="description" content="<?= htmlspecialchars($page_description) ?>">
@@ -67,12 +90,14 @@ $og_url = $og_url ?? $page_canonical;
     <link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet">
 
     <script src="https://kit.fontawesome.com/9dd0cb4077.js" crossorigin="anonymous"></script>
+    <script src="<?= JS_URL ?>/theme.js" defer></script>
 
     <link rel="icon" href="<?= SITE_URL ?>/assets/images/logo.svg" sizes="any">
 
     <link rel="stylesheet" href="<?= CSS_URL ?>/variables.css">
     <link rel="stylesheet" href="<?= CSS_URL ?>/style.css">
     <link rel="stylesheet" href="<?= CSS_URL ?>/responsive.css">
+    <link rel="stylesheet" href="<?= CSS_URL ?>/theme-dark.css">
 </head>
 
 <body>
@@ -99,6 +124,16 @@ $og_url = $og_url ?? $page_canonical;
                     <li><a href="<?= BASE_URL ?>/index.php">Home</a></li>
                     <li><a href="<?= BASE_URL ?>/about.php">About</a></li>
                     <li><a href="<?= BASE_URL ?>/contact.php">Contact</a></li>
+
+                    <li class="theme-toggle-item">
+                        <button type="button" class="theme-toggle" aria-label="Switch to dark theme"
+                            title="Switch to dark theme" aria-pressed="false">
+
+                            <i class="fa-solid fa-moon theme-toggle-dark-icon" aria-hidden="true"></i>
+
+                            <i class="fa-solid fa-sun theme-toggle-light-icon" aria-hidden="true"></i>
+                        </button>
+                    </li>
                 </ul>
             </nav>
 

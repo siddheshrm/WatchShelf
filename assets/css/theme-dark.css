@@ -1,0 +1,86 @@
+html[data-theme="dark"] {
+  color-scheme: dark;
+
+  /* PRIMARY PALETTE */
+  --color-primary: #f5f5f5;
+  --color-secondary: #d4d4d4;
+
+  --color-background: #181818;
+  --color-surface: #242424;
+  --color-highlight: #d49a62;
+
+  --color-input-background: #202020;
+
+  /* CARDS */
+  --color-card: #222222;
+  --color-card-content: #303030;
+  --color-brand: #e0b184;
+  --color-image-background: #f5f5f5;
+
+  /* ACCENT PALETTE */
+  --color-accent: #666666;
+  --color-accent-hover: #777777;
+  --color-accent-light: #333333;
+
+  /* TEXT */
+  --color-text: #f5f5f5;
+  --color-text-light: #c4c4c4;
+  --color-text-inverse: #f5f5f5;
+
+  /* BORDER */
+  --color-border: #4d4d4d;
+
+  /* FEEDBACK */
+  --color-success: #78a878;
+  --color-warning: #e1b24f;
+  --color-error: #df6f6f;
+  --color-info: #9a9a9a;
+
+  /* STATUS COLORS */
+  --color-featured-bg: rgba(225, 178, 79, 0.16);
+  --color-featured: #e1b24f;
+
+  --color-owned-bg: rgba(120, 168, 120, 0.16);
+
+  --color-wishlist: #df6f6f;
+  --color-wishlist-bg: rgba(223, 111, 111, 0.14);
+
+  /* SHADOWS */
+  --shadow-sm: 0 2px 6px rgba(0, 0, 0, 0.2);
+  --shadow-md: 0 6px 18px rgba(0, 0, 0, 0.28);
+  --shadow-lg: 0 12px 30px rgba(0, 0, 0, 0.36);
+}
+
+/* SEARCH INPUT TEXT + PLACEHOLDER */
+html[data-theme="dark"] .search-form input {
+  color: var(--color-text);
+}
+
+html[data-theme="dark"] .search-form input::placeholder {
+  color: var(--color-text-light);
+  opacity: 1;
+}
+
+/* PAGINATION / LINK CONTROLS */
+html[data-theme="dark"] .pagination-link,
+html[data-theme="dark"] .quick-link-item {
+  color: var(--color-text);
+}
+
+/* FILTER SHOW MORE / LESS */
+html[data-theme="dark"] .filter-toggle,
+html[data-theme="dark"] .filter-show-more,
+html[data-theme="dark"] .filter-show-less {
+  color: var(--color-brand);
+}
+
+html[data-theme="dark"] .filter-toggle:hover,
+html[data-theme="dark"] .filter-show-more:hover,
+html[data-theme="dark"] .filter-show-less:hover {
+  color: var(--color-highlight);
+}
+
+/* COLOR OPTION VISIBILITY */
+html[data-theme="dark"] .color-circle {
+  border: 1px solid rgba(255, 255, 255, 0.35);
+}

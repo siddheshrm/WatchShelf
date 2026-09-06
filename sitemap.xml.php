@@ -16,9 +16,14 @@ function xmlEscape(string $value): string
 
 echo '<?xml version="1.0" encoding="UTF-8"?>';
 ?>
+
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 
-    <!-- Homepage -->
+    <!-- Homepage / primary catalogue landing page. -->
+
+    <!-- Paginated catalogue URLs such as ?page=2 are intentionally excluded from the sitemap.
+    They remain indexable, self-canonical pages and are discoverable through the catalogue's crawlable pagination links. -->
+
     <url>
         <loc><?= xmlEscape(SITE_URL . '/') ?></loc>
     </url>
@@ -27,8 +32,7 @@ echo '<?xml version="1.0" encoding="UTF-8"?>';
     /*
      * Static public pages.
      *
-     * These pages are intentionally listed because they are canonical,
-     * indexable pages that provide useful site-level information.
+     * These pages are canonical, indexable pages that provide useful site-level information.
      */
     $staticPages = [
         'about.php',
@@ -46,10 +50,13 @@ echo '<?xml version="1.0" encoding="UTF-8"?>';
 
     <?php
     /*
-     * Quick Links
+     * Quick Links.
      *
-     * These are curated landing pages rather than arbitrary filter
-     * combinations, so they are intentionally included.
+     * These are curated, indexable SEO landing pages rather than arbitrary filter combinations, so their primary URLs are intentionally included.
+     *
+     * Paginated Quick Link URLs such as
+     * ?quick_link=example&page=2 are intentionally excluded.
+     * They remain indexable, self-canonical pages and are discoverable through crawlable pagination links.
      */
     $quickLinks = require __DIR__ . '/config/quick-links.php';
 
@@ -58,8 +65,7 @@ echo '<?xml version="1.0" encoding="UTF-8"?>';
         <url>
             <loc><?= xmlEscape(
                         SITE_URL . '/?quick_link=' . urlencode($slug)
-                    ) ?>
-            </loc>
+                    ) ?></loc>
         </url>
     <?php endforeach; ?>
 
