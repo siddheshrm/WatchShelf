@@ -306,6 +306,25 @@ html[data-theme="dark"] .theme-toggle-light-icon {
   color: var(--color-accent-hover);
 }
 
+.footer-back-to-top {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.back-to-top {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-sm);
+
+  color: var(--color-text);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+}
+
+.back-to-top:hover {
+  color: var(--color-accent-hover);
+}
+
 /* FOOTER WATCH GUIDES */
 .footer-quick-links {
   padding-top: var(--space-lg);

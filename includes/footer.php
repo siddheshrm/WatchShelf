@@ -25,6 +25,13 @@ $quickLinks = require __DIR__ . '/../config/quick-links.php';
             </div>
         </div>
 
+        <div class="footer-back-to-top">
+            <a href="#top" class="back-to-top">
+                <i class="fa-solid fa-arrow-up" aria-hidden="true"></i>
+                <span>Back to top</span>
+            </a>
+        </div>
+
         <div class="footer-copyright">
             <p>
                 &copy; <?= date('Y') ?>

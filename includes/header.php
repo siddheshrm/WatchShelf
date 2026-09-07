@@ -100,7 +100,7 @@ $og_url = $og_url ?? $page_canonical;
     <link rel="stylesheet" href="<?= CSS_URL ?>/theme-dark.css">
 </head>
 
-<body>
+<body id="top">
     <header class="site-header">
         <div class="site-container">
 
