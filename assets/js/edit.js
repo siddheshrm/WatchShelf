@@ -40,9 +40,6 @@ addColorBtn.addEventListener("click", function () {
     block.querySelector(".price").name =
       `colors[${colorIndex}][retailers][${retailerIndex}][price]`;
 
-    block.querySelector(".currency").name =
-      `colors[${colorIndex}][retailers][${retailerIndex}][currency]`;
-
     block.querySelector(".is-available").name =
       `colors[${colorIndex}][retailers][${retailerIndex}][is_available]`;
   });

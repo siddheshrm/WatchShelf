@@ -170,21 +170,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <legend>Basic Information</legend>
 
                 <div class="form-grid">
+                    <!-- Brand -->
                     <div class="form-group">
                         <label for="brand">Brand *</label>
                         <input type="text" id="brand" name="brand" required>
                     </div>
 
+                    <!-- Model -->
                     <div class="form-group">
                         <label for="model_name">Model *</label>
                         <input type="text" id="model_name" name="model_name" required>
                     </div>
 
+                    <!-- MRP -->
                     <div class="form-group">
                         <label for="mrp">MRP *</label>
                         <input type="number" step="0.01" id="mrp" name="mrp" required>
                     </div>
 
+                    <!-- Gender -->
                     <div class="form-group">
                         <label for="gender">Gender</label>
                         <select id="gender" name="gender">
@@ -194,6 +198,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         </select>
                     </div>
 
+                    <!-- Owner Status -->
                     <div class="form-group">
                         <label for="owner_status">Owner Status</label>
                         <select id="owner_status" name="owner_status">
@@ -203,6 +208,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         </select>
                     </div>
 
+                    <!-- Status -->
                     <div class="form-group">
                         <label>Status</label>
 
@@ -223,21 +229,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <legend>Specifications</legend>
 
                 <div class="form-grid">
+                    <!-- Case Material -->
                     <div class="form-group">
                         <label for="case_material">Case Material</label>
                         <input type="text" id="case_material" name="case_material">
                     </div>
 
-                    <div class="form-group">
-                        <label for="case_diameter_mm">Case Diameter (mm)</label>
-                        <input type="number" step="0.1" id="case_diameter_mm" name="case_diameter_mm">
-                    </div>
-
+                    <!-- Band Material -->
                     <div class="form-group">
                         <label for="band_material">Band Material</label>
                         <input type="text" id="band_material" name="band_material">
                     </div>
 
+                    <!-- Case Diameter (mm) -->
+                    <div class="form-group">
+                        <label for="case_diameter_mm">Case Diameter (mm)</label>
+                        <input type="number" step="0.1" id="case_diameter_mm" name="case_diameter_mm">
+                    </div>
+
+                    <!-- Movement Type -->
                     <div class="form-group">
                         <label for="movement_type">Movement Type</label>
                         <select id="movement_type" name="movement_type">
@@ -251,6 +261,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         </select>
                     </div>
 
+                    <!-- Display Type -->
                     <div class="form-group">
                         <label for="display_type">Display Type</label>
                         <select id="display_type" name="display_type">
@@ -261,21 +272,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         </select>
                     </div>
 
+                    <!-- Crystal Type -->
                     <div class="form-group">
                         <label for="crystal_type">Crystal Type</label>
                         <input type="text" id="crystal_type" name="crystal_type">
                     </div>
 
+                    <!-- Water Resistance (ATM) -->
                     <div class="form-group">
                         <label for="water_resistance_atm">Water Resistance (ATM)</label>
                         <input type="number" id="water_resistance_atm" name="water_resistance_atm">
                     </div>
 
+                    <!-- Warranty (Years) -->
                     <div class="form-group">
                         <label for="warranty_years">Warranty (Years)</label>
                         <input type="number" id="warranty_years" name="warranty_years">
                     </div>
 
+                    <!-- Tags -->
                     <div class="form-group">
                         <label for="tags">Tags</label>
                         <input type="text" id="tags" name="tags" placeholder="Enter tags separated by commas">
@@ -297,6 +312,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                 <strong>New Color</strong>
                             </summary>
 
+                            <!-- Color -->
                             <div class="form-group">
                                 <label>Color</label>
                                 <select class="color-select">
@@ -310,9 +326,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                 </select>
                             </div>
 
+                            <!-- Is Default Color? -->
                             <div class="form-group">
                                 <label>
-                                    <input type="radio" name="default_color" class="default-color">Default Color
+                                    <input type="radio" name="default_color" class="default-color">Is Default Color?
                                 </label>
                             </div>
 
@@ -322,11 +339,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                     <fieldset class="retailer-block">
                                         <legend>Retailer <?= $i; ?></legend>
 
+                                        <!-- Retailer Name -->
                                         <div class="form-group">
                                             <label>Retailer Name</label>
                                             <input type="text" class="retailer-name">
                                         </div>
 
+                                        <!-- Retailer Type -->
                                         <div class="form-group">
                                             <label>Retailer Type</label>
                                             <select class="retailer-type">
@@ -336,36 +355,35 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                             </select>
                                         </div>
 
+                                        <!-- Base URL -->
                                         <div class="form-group">
                                             <label>Base URL</label>
 
                                             <div class="url-input-group">
                                                 <input type="url" class="base-url">
-                                                <button type="button" class="open-url" title="Open URL in a new tab" aria-label="Open URL"></button>🔗</button>
+                                                <button type="button" class="open-url" title="Open URL in a new tab" aria-label="Open URL">🔗</button>
                                             </div>
                                         </div>
 
-                                        <div class="form-group">
-                                            <label>Affiliate URL</label>
-
-                                            <div class="url-input-group">
-                                                <input type="url" class="affiliate-url">
-                                                <button type="button" class="open-url" title="Open URL in a new tab" aria-label="Open URL"></button>🔗</button>
-                                            </div>
-                                        </div>
-
+                                        <!-- Price -->
                                         <div class="form-group">
                                             <label>Price</label>
                                             <input type="number" step="0.01" class="price">
                                         </div>
 
+                                        <!-- Affiliate URL -->
                                         <div class="form-group">
-                                            <label>Currency</label>
-                                            <input type="text" class="currency" value="INR" readonly>
+                                            <label>Affiliate URL</label>
+
+                                            <div class="url-input-group">
+                                                <input type="url" class="affiliate-url">
+                                                <button type="button" class="open-url" title="Open URL in a new tab" aria-label="Open URL">🔗</button>
+                                            </div>
                                         </div>
 
+                                        <!-- Availability -->
                                         <div class="form-group">
-                                            <label>Available</label>
+                                            <label>Availability</label>
                                             <select class="is-available">
                                                 <option value="1" selected>Yes</option>
                                                 <option value="0">No</option>
