@@ -8,6 +8,7 @@ const colorButtons = document.querySelectorAll(".color-item");
 const highlightsToggle = document.querySelector(".highlights-toggle");
 const highlightsContent = document.querySelector(".highlights-content");
 
+updateMainImage();
 updateNavigation();
 
 // Image Navigation
@@ -16,14 +17,14 @@ if (nextButton && prevButton) {
     if (images.length <= 1) return;
 
     currentImage = (currentImage + 1) % images.length;
-    mainImage.src = images[currentImage];
+    updateMainImage();
   });
 
   prevButton.addEventListener("click", () => {
     if (images.length <= 1) return;
 
     currentImage = (currentImage - 1 + images.length) % images.length;
-    mainImage.src = images[currentImage];
+    updateMainImage();
   });
 }
 
@@ -198,6 +199,15 @@ function formatPrice(price) {
   return `₹${Number(price).toLocaleString("en-IN")}`;
 }
 
+function updateMainImage() {
+  const imageSrc = images[currentImage];
+
+  mainImage.src = imageSrc;
+
+  mainImage.alt =
+    imageSrc === caseSizeGuideImage ? "Watch case size guide" : productImageAlt;
+}
+
 // Initial Buying Options
 if (selectedColor && variantsByColor[selectedColor]) {
   renderBuyingOptions(variantsByColor[selectedColor]);
@@ -206,7 +216,8 @@ if (selectedColor && variantsByColor[selectedColor]) {
 // Top Highlights Toggle
 if (highlightsToggle && highlightsContent) {
   highlightsToggle.addEventListener("click", () => {
-    const isExpanded = highlightsToggle.getAttribute("aria-expanded") === "true";
+    const isExpanded =
+      highlightsToggle.getAttribute("aria-expanded") === "true";
 
     highlightsToggle.setAttribute("aria-expanded", String(!isExpanded));
 

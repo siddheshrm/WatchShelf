@@ -400,8 +400,9 @@
 
   .gallery-prev,
   .gallery-next {
-    width: 2.5rem;
-    height: 2.5rem;
+    width: 2rem;
+    height: 2rem;
+    font-size: var(--font-size-sm);
   }
 
   .gallery-prev {
@@ -594,6 +595,10 @@
   .footer-quick-links-list {
     grid-template-columns: 1fr;
     gap: var(--space-sm);
+  }
+
+  .back-to-top {
+    font-size: 0.75rem;
   }
 
   /* RELATED QUICK LINKS */

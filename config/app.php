@@ -56,7 +56,8 @@ define('JS_URL', BASE_URL . '/assets/js');
 // Images
 define('WATCH_IMAGE_DIR', __DIR__ . '/../assets/images/watches');
 define('WATCH_IMAGE_URL', BASE_URL . '/assets/images/watches');
-define('DEFAULT_WATCH_IMAGE', WATCH_IMAGE_URL . '/no-image.webp');
+define('DEFAULT_WATCH_IMAGE', WATCH_IMAGE_URL . '/watch-image-placeholder.webp');
+define('WATCH_CASE_SIZE_GUIDE_IMAGE', WATCH_IMAGE_URL . '/watch-case-size-guide.webp');
 
 // Owner status values
 define('OWNER_STATUS_OWNED', 'owned');

@@ -969,10 +969,25 @@ html[data-theme="dark"] .theme-toggle-light-icon {
 .gallery-next {
   position: absolute;
   top: 50%;
-
   transform: translateY(-50%);
-
   z-index: 2;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 2rem;
+  height: 2rem;
+  padding: 0;
+
+  background: rgba(255, 255, 255, 0.82);
+  color: #242423;
+
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  border-radius: 50%;
+
+  box-shadow: var(--shadow-sm);
+  cursor: pointer;
 }
 
 .gallery-prev {

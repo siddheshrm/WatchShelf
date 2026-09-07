@@ -61,9 +61,15 @@ if (!empty($watch['image_folder'])) {
     }
 }
 
+// Keep the actual product images separately for structured data
+$productImages = $images;
+
 if (empty($images)) {
     $images[] = DEFAULT_WATCH_IMAGE;
 }
+
+// Generic guide is always the final gallery image
+$images[] = WATCH_CASE_SIZE_GUIDE_IMAGE;
 
 // Fetch All Variants
 $variantStmt = $conn->prepare("SELECT id, color_name, last_checked, image_folder, is_default, retailer_name, retailer_type, base_url, affiliate_url, price, currency, is_available
@@ -186,6 +192,9 @@ foreach ($variants as $variant) {
     if (empty($variantImages[$variant['id']])) {
         $variantImages[$variant['id']][] = DEFAULT_WATCH_IMAGE;
     }
+
+    // Generic guide is always the final gallery image.
+    $variantImages[$variant['id']][] = WATCH_CASE_SIZE_GUIDE_IMAGE;
 }
 
 $productSchema = [
@@ -194,7 +203,6 @@ $productSchema = [
 
     'name' => $page_title,
     'url' => $page_canonical,
-    'image' => array_values($images),
     'description' => $page_description,
 
     'brand' => [
@@ -225,8 +233,8 @@ if (empty($productSchema['offers'])) {
     unset($productSchema['offers']);
 }
 
-if (!empty($images) && $images[0] !== DEFAULT_WATCH_IMAGE) {
-    $productSchema['image'] = $images;
+if (!empty($productImages)) {
+    $productSchema['image'] = array_values($productImages);
 }
 
 if (!empty($watch['model_name'])) {
@@ -327,24 +335,28 @@ include '../includes/header.php';
         <section class="product-page">
             <!-- Product Images -->
             <div class="product-gallery">
-                <button
-                    type="button"
-                    class="gallery-prev"
-                    aria-label="Previous image">
-                    <i class="fa-solid fa-chevron-left" aria-hidden="true"></i>
-                </button>
 
                 <div class="watch-image image-frame">
-                    <img id="main-image" class="product-main-image" src="<?= htmlspecialchars($images[0]) ?>"
-                        alt="<?= htmlspecialchars($watch['brand'] . ' ' . $watch['model_name'] . ' Watch') ?>" loading="lazy">
-                </div>
 
-                <button
-                    type="button"
-                    class="gallery-next"
-                    aria-label="Next image">
-                    <i class="fa-solid fa-chevron-right" aria-hidden="true"></i>
-                </button>
+                    <button
+                        type="button"
+                        class="gallery-prev"
+                        aria-label="Previous image">
+                        <i class="fa-solid fa-chevron-left" aria-hidden="true"></i>
+                    </button>
+
+                    <img
+                        id="main-image"
+                        class="product-main-image"
+                        src="<?= htmlspecialchars($images[0]) ?>"
+                        alt="<?= htmlspecialchars($watch['brand'] . ' ' . $watch['model_name'] . ' Watch') ?>"
+                        loading="lazy">
+
+                    <button type="button" class="gallery-next" aria-label="Next image">
+                        <i class="fa-solid fa-chevron-right" aria-hidden="true"></i>
+                    </button>
+
+                </div>
             </div>
 
             <div class="product-content">
@@ -636,6 +648,12 @@ include '../includes/header.php';
         <script>
             // Default images
             let images = <?= json_encode($images) ?>;
+
+            // Generic case-size guide
+            const caseSizeGuideImage = <?= json_encode(WATCH_CASE_SIZE_GUIDE_IMAGE) ?>;
+
+            // Product image alt text
+            const productImageAlt = <?= json_encode($watch['brand'] . ' ' . $watch['model_name'] . ' Watch') ?>;
 
             // All variants
             const variants = <?= json_encode($variants) ?>;
