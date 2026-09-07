@@ -39,6 +39,7 @@ echo '<?xml version="1.0" encoding="UTF-8"?>';
         'contact.php',
         'disclaimer.php',
         'privacy-policy.php',
+        'developers-note.php',
     ];
 
     foreach ($staticPages as $page):

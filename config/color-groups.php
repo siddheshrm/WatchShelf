@@ -23,6 +23,8 @@ return [
             'Pearl White',
             'Ivory',
             'Ceramic White',
+            'Mother of Pearl',
+            'MOP',
             'Transparent',
             'Clear',
         ],
@@ -41,6 +43,7 @@ return [
             'Charcoal',
             'Fumé',
             'Gunmetal',
+            'Meteorite',
         ],
     ],
 
@@ -57,15 +60,18 @@ return [
             'Palladium',
             'White Gold',
             'Gunmetal',
+            'Black Steel',
 
-            // Grey-looking finishes
+            // Grey-looking metallic finishes
             'Grey',
             'Gray',
             'Light Grey',
             'Dark Grey',
             'Slate Grey',
+            'Smoke',
             'Anthracite',
             'Charcoal',
+            'Meteorite',
         ],
     ],
 
@@ -73,6 +79,7 @@ return [
         'aliases' => ['Blue', 'Azure', 'Cyan'],
         'colors' => [
             'Blue',
+            'Dark Blue',
             'Royal Blue',
             'Cobalt Blue',
             'Navy Blue',
@@ -81,10 +88,13 @@ return [
             'Ice Blue',
             'Tiffany Blue',
             'Petrol Blue',
-            'Sunburst Blue',
             'Teal',
             'Turquoise',
+            'Teal Blue',
             'Aqua',
+            'Sunburst Blue',
+            'Grayish Blue',
+            'Light Blue',
         ],
     ],
 
@@ -96,13 +106,18 @@ return [
             'Emerald Green',
             'British Racing Green',
             'Olive Green',
+            'Sage Green',
             'Mint Green',
             'Lime Green',
-            'Sunburst Green',
+            'Light Green',
+            'Fluorescent Green',
+            'Pastel Green',
+            'Sea Green',
 
-            // Blue-Green overlap
+            // Blue-green overlap
             'Teal',
             'Turquoise',
+            'Teal Blue',
         ],
     ],
 
@@ -123,6 +138,7 @@ return [
         'colors' => [
             'Orange',
             'Coral',
+            'Peach',
         ],
     ],
 
@@ -141,6 +157,7 @@ return [
             'Dark Brown',
             'Chocolate Brown',
             'Cognac',
+            'Mahogany Brown',
             'Mocha',
             'Tan',
             'Sand',
@@ -148,6 +165,8 @@ return [
             'Khaki',
             'Beige',
             'Cream',
+            'Peach',
+            'Nude',
             'Bronze',
             'Copper',
         ],
@@ -159,6 +178,7 @@ return [
             'Purple',
             'Violet',
             'Lavender',
+            'Fuchsia',
         ],
     ],
 
@@ -166,6 +186,9 @@ return [
         'aliases' => ['Pink'],
         'colors' => [
             'Pink',
+            'Salmon Pink',
+            'Fuchsia',
+            'Nude',
             'Rose Gold',
             'Everose Gold',
         ],
@@ -192,6 +215,8 @@ return [
             'Mother of Pearl',
             'MOP',
             'Skeleton',
+            'Transparent',
+            'Clear',
             'Multicolor',
         ],
     ],

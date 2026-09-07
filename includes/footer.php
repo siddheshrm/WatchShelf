@@ -6,11 +6,11 @@ $quickLinks = require __DIR__ . '/../config/quick-links.php';
     <div class="site-container">
 
         <nav class="footer-links" aria-label="Footer navigation">
-            <a href="<?= BASE_URL ?>/index.php">Home</a>
             <a href="<?= BASE_URL ?>/about.php">About</a>
             <a href="<?= BASE_URL ?>/contact.php">Contact</a>
             <a href="<?= BASE_URL ?>/disclaimer.php">Disclaimer</a>
             <a href="<?= BASE_URL ?>/privacy-policy.php">Privacy Policy</a>
+            <a href="<?= BASE_URL ?>/developers-note.php" class="footer-developer-link">Developer's Note</a>
         </nav>
 
         <div class="footer-quick-links">

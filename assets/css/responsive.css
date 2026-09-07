@@ -581,7 +581,7 @@
 
   /* FOOTER */
   .footer-links {
-    flex-wrap: nowrap;
+    flex-wrap: wrap;
     justify-content: center;
     gap: var(--space-sm);
   }
@@ -590,6 +590,11 @@
     flex-shrink: 0;
 
     font-size: 0.8125rem; /* 13px */
+  }
+
+  .footer-links .footer-developer-link {
+    flex-basis: 100%;
+    text-align: center;
   }
 
   .footer-quick-links-list {
