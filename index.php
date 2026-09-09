@@ -61,7 +61,7 @@ switch ($sort) {
 
 /* PAGINATION */
 
-$productsPerPage = 28;
+$productsPerPage =36;
 $currentPage = 1;
 
 if (isset($_GET['page'])) {

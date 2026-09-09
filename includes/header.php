@@ -19,6 +19,8 @@ $og_title = $og_title ?? $page_title . ' | ' . $site_name;
 $og_description = $og_description ?? $page_description;
 $og_url = $og_url ?? $page_canonical;
 
+// Search field fallback for pages that do not define a search query
+$searchQuery = $searchQuery ?? '';
 ?>
 
 <!DOCTYPE html>
