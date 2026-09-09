@@ -2,13 +2,22 @@
     <div class="filter-sidebar-header">
         <h2 class="filter-title">Filters</h2>
 
-        <button
-            type="button"
-            class="filter-close-button"
-            aria-label="Close filters">
+        <button type="button" class="filter-close-button" aria-label="Close filters">
             <i class="fa-solid fa-xmark" aria-hidden="true"></i>
         </button>
     </div>
+
+    <?php
+
+    $maxPriceValue =
+        isset($_GET['max_price']) &&
+        is_string($_GET['max_price']) &&
+        is_numeric($_GET['max_price']) &&
+        (float) $_GET['max_price'] > 0
+        ? $_GET['max_price']
+        : '';
+
+    ?>
 
     <form action="index.php" method="GET" class="filter-form">
         <!-- Gender -->
@@ -191,8 +200,10 @@
         <!-- Maximum Price -->
         <div class="filter-group">
             <h3 class="filter-heading">Maximum Price</h3>
-            <input class="filter-price" type="number" name="max_price" min="0" placeholder="₹ 5000"
-                value="<?= htmlspecialchars($_GET['max_price'] ?? '') ?>">
+
+            <input class="filter-price" type="number" name="max_price" min="0"
+                placeholder="e.g. 5000"
+                value="<?= htmlspecialchars($maxPriceValue, ENT_QUOTES, 'UTF-8') ?>">
         </div>
 
         <!-- Buttons -->

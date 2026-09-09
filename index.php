@@ -1,34 +1,66 @@
 <?php
+
+require_once 'config/app.php';
 require_once 'config/connection.php';
 require_once 'watch/search.php';
 require_once 'includes/sidebar-data.php';
-require_once 'config/app.php';
 
 $quickLinks = require_once 'config/quick-links.php';
 
-// Page configuration
+/* PAGE CONFIGURATION */
+
 $page_title = "Home";
 $page_description = "Discover and compare budget-friendly watches from popular brands and retailers in India.";
 $page_canonical = SITE_URL . '/';
 $page_robots = 'index, follow';
 
-// Sorting
+$og_type = 'website';
+$og_title = 'WatchShelf';
+$og_description = $page_description;
+$og_url = SITE_URL . '/';
+
+$catalog_heading = 'Find Your Perfect Budget Watch';
+$catalog_intro = '';
+
+/* SORTING */
+/* Sorting only controls the order of an already-established eligible watch set.
+    It must never determine which watches qualify. */
+
+$allowedSorts = ['featured', 'price_low', 'price_high'];
+
 $sort = $_GET['sort'] ?? 'featured';
+
+if (!is_string($sort) || !in_array($sort, $allowedSorts, true)) {
+    $sort = 'featured';
+}
+
+$minPriceSql = "MIN(CASE WHEN wr.is_available = 1
+                                            AND wr.price IS NOT NULL
+                                            AND wr.price > 0
+                                            THEN wr.price
+                                    END)";
 
 switch ($sort) {
     case 'price_low':
-        $orderBy = "min_price ASC, w.brand ASC, w.model_name ASC, w.id ASC";
+        $orderBy = "CASE WHEN $minPriceSql IS NULL THEN 1 ELSE 0 END ASC,
+                             $minPriceSql ASC, w.brand ASC, w.model_name ASC, w.id ASC";
         break;
 
     case 'price_high':
-        $orderBy = "min_price DESC, w.brand ASC, w.model_name ASC, w.id ASC";
+        $orderBy = "CASE WHEN $minPriceSql IS NULL THEN 1 ELSE 0 END ASC,
+                            $minPriceSql DESC, w.brand ASC, w.model_name ASC, w.id ASC";
         break;
 
+    case 'featured':
     default:
-        $orderBy = "w.is_featured DESC, min_price ASC, w.brand ASC, w.model_name ASC, w.id ASC";
+        $orderBy = "w.is_featured DESC,
+                            CASE WHEN $minPriceSql IS NULL THEN 1 ELSE 0 END ASC,
+                            $minPriceSql ASC, w.brand ASC, w.model_name ASC, w.id ASC";
+        break;
 }
 
-// Pagination
+/* PAGINATION */
+
 $productsPerPage = 28;
 $currentPage = 1;
 
@@ -48,7 +80,7 @@ if (isset($_GET['page'])) {
 
     $currentPage = (int) $requestedPage;
 
-    // Remove redundant page=1 while preserving other query parameters.
+    // Remove redundant page=1 while preserving all other query parameters.
     if ($currentPage === 1) {
         $params = $_GET;
         unset($params['page']);
@@ -64,18 +96,23 @@ if (isset($_GET['page'])) {
     }
 }
 
-// Function to build pagination URLs while preserving existing query parameters
+// Builds pagination URLs while preserving the current request parameters.
 function buildPaginationUrl(int $page): string
 {
     $params = $_GET;
-    $params['page'] = $page;
 
-    return BASE_URL . '/?' . http_build_query($params);
+    if ($page <= 1) {
+        unset($params['page']);
+    } else {
+        $params['page'] = $page;
+    }
+
+    $query = http_build_query($params);
+
+    return BASE_URL . '/' . ($query !== '' ? '?' . $query : '');
 }
 
-// Generate pagination items for display
-$paginationItems = [];
-
+// Generates compact pagination items.
 function getPaginationItems(int $currentPage, int $totalPages, int $radius = 1): array
 {
     if ($totalPages <= 1) {
@@ -109,75 +146,118 @@ function getPaginationItems(int $currentPage, int $totalPages, int $radius = 1):
     return $items;
 }
 
+// Redirects the current request when it contains parameters that are not valid for the active catalogue mode.
+function normalizeCatalogueRequest(array $allowedKeys): void
+{
+    $normalizedParams = [];
+
+    foreach ($allowedKeys as $key) {
+        if (array_key_exists($key, $_GET)) {
+            $normalizedParams[$key] = $_GET[$key];
+        }
+    }
+
+    if ($normalizedParams === $_GET) {
+        return;
+    }
+
+    $redirectUrl = BASE_URL . '/';
+
+    if (!empty($normalizedParams)) {
+        $redirectUrl .= '?' . http_build_query($normalizedParams);
+    }
+
+    header('Location: ' . $redirectUrl, true, 301);
+    exit;
+}
+
+/* CATALOGUE REQUEST STATE */
+
+$paginationItems = [];
+
 $emptyResult = false;
 $emptyResultType = null;
 
 $showResultCount = false;
 
+/* This describes the eligibility policy established by the request source.
+    Default / Sidebar: false unless sidebar explicitly enables out-of-stock.
+    Search / Quick Link: true by design.
+    Sorting must not change this value. */
+
 $includeOutOfStock = false;
 
-$hasCatalogueFilters =
-    isset($_GET['gender']) ||
-    isset($_GET['brand']) ||
-    isset($_GET['retailer']) ||
-    isset($_GET['color']) ||
-    isset($_GET['movement']) ||
-    isset($_GET['case_width']) ||
-    isset($_GET['include_out_of_stock']) ||
-    isset($_GET['max_price']) ||
-    isset($_GET['sort']);
+/* IMPORTANT: `sort` is deliberately NOT included here.
+    /?sort=price_low is still the default catalogue, merely ordered differently. */
 
-// Determine the catalogue mode to display based on the request source
+$hasValidMaxPrice =
+    isset($_GET['max_price']) &&
+    is_string($_GET['max_price']) &&
+    is_numeric($_GET['max_price']) &&
+    (float) $_GET['max_price'] > 0;
+
+$hasIncludeOutOfStock =
+    isset($_GET['include_out_of_stock']) &&
+    is_string($_GET['include_out_of_stock']) &&
+    $_GET['include_out_of_stock'] === '1';
+
+$hasCatalogueFilters =
+    !empty($selectedGenders) ||
+    !empty($selectedBrands) ||
+    !empty($selectedRetailers) ||
+    !empty($selectedColors) ||
+    !empty($selectedMovement) ||
+    !empty($selectedCaseWidths) ||
+    $hasIncludeOutOfStock ||
+    $hasValidMaxPrice;
+
 $catalogueMode = 'default';
 
-// Determine which catalogue mode to display
-// Request source: Search / Quick Link / Filters / Default
+/* Determine catalogue eligibility
+    Each branch below has one responsibility:
+    Determine WHICH watch IDs belong in the catalogue.
+    Nothing below the eligibility stage should remove watches. */
 
-// Search
-if (isset($_GET['search_submit']) && !empty(trim($_GET['search'] ?? ''))) {
-    $catalogueMode = 'search';
+/* SEARCH */
+$searchQuery = '';
 
-    $watchIds = searchWatches($conn, $_GET['search']);
+if (isset($_GET['search']) && is_string($_GET['search'])) {
+    $searchQuery = trim($_GET['search']);
+}
 
-    if (empty($watchIds)) {
-        $emptyResult = true;
-        $emptyResultType = 'search';
+/* QUICK LINK */
+if (isset($_GET['quick_link']) && is_string($_GET['quick_link']) && isset($quickLinks[$_GET['quick_link']])) {
+    $catalogueMode = 'quick_link';
 
-        $watchIds = filterWatches($conn, []);
-    } else {
-        $includeOutOfStock = true;
+    normalizeCatalogueRequest(['quick_link', 'sort', 'page']);
+
+    $quickLink = $quickLinks[$_GET['quick_link']];
+
+    /* Quick Links are curated/discovery collections.
+       Matching out-of-stock products are intentionally retained. */
+    $includeOutOfStock = true;
+
+    $watchIds = filterQuickLinkWatches(
+        $conn,
+        $quickLink['filters']
+    );
+
+    if (!empty($watchIds)) {
         $showResultCount = true;
     }
 
-    $searchQuery = trim($_GET['search']);
-
-    // Search result pages are not canonical landing pages.
-    $page_title = "Search Results for \"" . $searchQuery . "\"";
-
-    $catalog_heading = "Search Results for \"" . $searchQuery . "\"";
-    $catalog_intro = '';
-
-    $page_robots = 'noindex, follow';
-    $page_canonical = SITE_URL . '/';
-
-    $og_type = 'website';
-    $og_title = 'Search Results | WatchShelf';
-    $og_description = 'Search and compare budget-friendly watches on WatchShelf.';
-    $og_url = SITE_URL . '/';
-
-    // Quick Link
-} elseif (isset($_GET['quick_link']) && isset($quickLinks[$_GET['quick_link']])) {
-    $catalogueMode = 'quick_link';
-
-    // Apply quick-link catalogue logic
-    $quickLink = $quickLinks[$_GET['quick_link']];
-
     $page_title = $quickLink['title'];
-    $page_description = $quickLink['description'] ?? "Discover {$quickLink['title']} on WatchShelf.";
+
+    $page_description =
+        $quickLink['description']
+        ?? "Discover {$quickLink['title']} on WatchShelf.";
 
     $page_robots = 'index, follow';
 
-    $page_canonical = SITE_URL . '/?quick_link=' . urlencode($_GET['quick_link']);
+    $page_canonical =
+        SITE_URL
+        . '/?quick_link='
+        . urlencode($_GET['quick_link']);
 
     $og_type = 'website';
     $og_title = $page_title;
@@ -187,30 +267,85 @@ if (isset($_GET['search_submit']) && !empty(trim($_GET['search'] ?? ''))) {
     $catalog_heading = $quickLink['title'];
     $catalog_intro = $quickLink['description'] ?? '';
 
-    $watchIds = filterQuickLinkWatches($conn, $quickLink['filters']);
+    /* SEARCH */
+} elseif (isset($_GET['search_submit']) && $searchQuery !== '') {
+    $catalogueMode = 'search';
+
+    normalizeCatalogueRequest(['search', 'search_submit', 'sort', 'page']);
+
+    /* Search is discovery-oriented.
+       Matching out-of-stock watches are allowed. */
     $includeOutOfStock = true;
 
-    if (!empty($watchIds)) {
-        $showResultCount = true;
-    }
+    $watchIds = searchWatches(
+        $conn,
+        $searchQuery
+    );
 
-    // Filters
-} elseif ($hasCatalogueFilters) {
-    $catalogueMode = 'filter';
-
-    $includeOutOfStock = isset($_GET['include_out_of_stock']);
-    $watchIds = filterWatches($conn, $_GET);
-
+    /* Empty search:
+       Preserve the search URL/message, but display the normal
+       available catalogue as fallback content. */
     if (empty($watchIds)) {
         $emptyResult = true;
-        $emptyResultType = 'filter';
+        $emptyResultType = 'search';
+
+        $includeOutOfStock = false;
 
         $watchIds = filterWatches($conn, []);
     } else {
         $showResultCount = true;
     }
 
-    // Generic filter pages are not canonical landing pages.
+    $page_title = 'Search Results for "' . $searchQuery . '"';
+
+    $catalog_heading = 'Search Results for "' . $searchQuery . '"';
+    $catalog_intro = '';
+
+    $page_robots = 'noindex, follow';
+    $page_canonical = SITE_URL . '/';
+
+    $og_type = 'website';
+    $og_title = 'Search Results | WatchShelf';
+    $og_description =
+        'Search and compare budget-friendly watches on WatchShelf.';
+    $og_url = SITE_URL . '/';
+
+    /* SIDEBAR FILTERS */
+} elseif ($hasCatalogueFilters) {
+    $catalogueMode = 'filter';
+
+    normalizeCatalogueRequest(['gender', 'brand', 'retailer', 'color', 'movement', 'case_width', 'include_out_of_stock', 'max_price', 'filter_submit', 'sort', 'page']);
+
+    // This is the only request source where the user explicitly controls out-of-stock inclusion.
+    $includeOutOfStock = $hasIncludeOutOfStock;
+
+    $filterParams = $_GET;
+
+    if (!$hasIncludeOutOfStock) {
+        unset($filterParams['include_out_of_stock']);
+    }
+
+    /* Invalid max_price values must not reach filterWatches(). */
+    if (!$hasValidMaxPrice) {
+        unset($filterParams['max_price']);
+    }
+
+    $watchIds = filterWatches($conn, $filterParams);
+
+    /* Empty filter:
+       Preserve filter URL/message while displaying the normal
+       available catalogue as fallback content. */
+    if (empty($watchIds)) {
+        $emptyResult = true;
+        $emptyResultType = 'filter';
+
+        $includeOutOfStock = false;
+
+        $watchIds = filterWatches($conn, []);
+    } else {
+        $showResultCount = true;
+    }
+
     $page_robots = 'noindex, follow';
     $page_canonical = SITE_URL . '/';
 
@@ -222,12 +357,22 @@ if (isset($_GET['search_submit']) && !empty(trim($_GET['search'] ?? ''))) {
     $catalog_heading = 'Find Your Perfect Budget Watch';
     $catalog_intro = '';
 
-    // Default catalogue
+    /* DEFAULT CATALOGUE */
 } else {
+    $catalogueMode = 'default';
+
+    $allowedDefaultKeys = ['sort', 'page'];
+
+    if ($sort === 'featured') {
+        $allowedDefaultKeys = ['page'];
+    }
+
+    normalizeCatalogueRequest($allowedDefaultKeys);
+
+    $includeOutOfStock = false;
 
     $watchIds = filterWatches($conn, []);
 
-    // Homepage / default catalogue
     $page_robots = 'index, follow';
     $page_canonical = SITE_URL . '/';
 
@@ -238,22 +383,45 @@ if (isset($_GET['search_submit']) && !empty(trim($_GET['search'] ?? ''))) {
 
     $catalog_heading = 'Find Your Perfect Budget Watch';
     $catalog_intro = '';
+
+    if ($sort !== 'featured') {
+        $page_robots = 'noindex, follow';
+        $page_canonical = SITE_URL . '/';
+    }
 }
+
+/* EMPTY CATALOGUE */
 
 if (empty($watchIds)) {
     $watchResult = false;
+
+    $totalWatches = 0;
     $totalPages = 0;
 } else {
     $totalWatches = count($watchIds);
-    $totalPages = (int) ceil($totalWatches / $productsPerPage);
 
-    // Reject catalogue page numbers that do not exist.
+    $totalPages = (int) ceil(
+        $totalWatches / $productsPerPage
+    );
+
+    /* Reject catalogue page numbers beyond the eligible result set. */
     if ($currentPage > $totalPages) {
         require __DIR__ . '/404.php';
         exit;
     }
 
-    // Finalize SEO metadata for valid paginated catalogue pages.
+    /* SORT VARIANT SEO
+   Non-default sorting changes presentation only and must not create
+   separately indexable catalogue URLs. */
+    if (
+        $sort !== 'featured' &&
+        in_array($catalogueMode, ['default', 'quick_link'], true)
+    ) {
+        $page_robots = 'noindex, follow';
+    }
+
+    /* PAGINATED SEO METADATA */
+
     if ($currentPage > 1) {
         if ($catalogueMode === 'default') {
             $page_title = "Budget Watches - Page {$currentPage}";
@@ -263,73 +431,75 @@ if (empty($watchIds)) {
             $og_url = $page_canonical;
         } elseif ($catalogueMode === 'quick_link') {
             $page_title = $quickLink['title'] . " - Page {$currentPage}";
-
-            $page_canonical =
-                SITE_URL .
-                '/?quick_link=' .
-                urlencode($_GET['quick_link']) .
-                '&page=' .
-                $currentPage;
+            $page_canonical = SITE_URL . '/?quick_link=' . urlencode($_GET['quick_link']) . '&page=' . $currentPage;
 
             $og_title = $page_title . ' | WatchShelf';
             $og_url = $page_canonical;
         }
     }
 
-    // Generate pagination items for display
+    /* Pagination UI */
+
     $paginationItems = getPaginationItems($currentPage, $totalPages);
 
-    // Sort the complete result set before pagination.
-    // This ensures sorting is applied consistently across all pages.
+    /* Global Sorting */
+    /* The sorter receives the FINAL eligible watch IDs.
+    It is only allowed to reorder those IDs. */
+
     $placeholders = implode(',', array_fill(0, count($watchIds), '?'));
 
-    // Prioritize explicitly selected genders over Unisex.
+    /* Prioritize explicitly selected Men/Women results ahead of Unisex.
+    This changes ordering only, not eligibility. */
     $genderPrioritySql = '';
 
-    if (!empty($_GET['gender']) && is_array($_GET['gender'])) {
+    if ($catalogueMode === 'filter' && !empty($selectedGenders)) {
         $selectedGendersForPriority = array_map(
             fn($gender) => strtolower(trim($gender)),
-            $_GET['gender']
+            $selectedGenders
         );
 
         $hasSpecificGender =
             in_array('men', $selectedGendersForPriority, true) ||
             in_array('women', $selectedGendersForPriority, true);
 
-        // Only apply priority when Men/Women is selected without explicitly selecting Unisex.
-        // If Unisex is explicitly selected, all selected genders have equal priority.
-        if ($hasSpecificGender && !in_array('unisex', $selectedGendersForPriority, true)) {
-            $genderPrioritySql = "CASE
-                                                WHEN LOWER(w.gender) IN ('men', 'women') THEN 0
-                                                WHEN LOWER(w.gender) = 'unisex' THEN 1
-                                                ELSE 2
-                                                END, ";
+        /* If Unisex itself was explicitly selected, all selected genders receive equal priority. */
+        if (
+            $hasSpecificGender &&
+            !in_array('unisex', $selectedGendersForPriority, true)
+        ) {
+            $genderPrioritySql = "
+            CASE
+                WHEN LOWER(w.gender) IN ('men', 'women') THEN 0
+                WHEN LOWER(w.gender) = 'unisex' THEN 1
+                ELSE 2
+            END,
+        ";
         }
     }
 
-    $sortSql = "SELECT w.id, w.is_featured, MIN(CASE WHEN wr.is_available = 1 AND wr.price IS NOT NULL THEN wr.price END) AS min_price
+    /* min_price deliberately considers only currently available, positively-priced retailer records.
+    Therefore an entirely out-of-stock watch receives: min_price = NULL
+    Price sorting explicitly places those NULL values last. */
+    $sortSql = "SELECT w.id, w.is_featured, $minPriceSql AS min_price
                         FROM watches w
                         LEFT JOIN watch_variants wr
                         ON wr.watch_id = w.id
                         WHERE w.id IN ($placeholders)
                         AND w.is_active = 1
-                        GROUP BY w.id";
-
-    if (!$includeOutOfStock) {
-        $sortSql .= " HAVING MAX(wr.is_available) = 1 ";
-    }
-
-    $sortSql .= " ORDER BY $genderPrioritySql$orderBy";
+                        GROUP BY w.id, w.is_featured
+                        ORDER BY $genderPrioritySql $orderBy";
 
     $stmt = $conn->prepare($sortSql);
 
     if (!$stmt) {
-        die($conn->error . "<br><br>" . $sortSql);
+        die($conn->error .
+            "<br><br>" .
+            $sortSql);
     }
 
     $types = str_repeat('i', count($watchIds));
-    $stmt->bind_param($types, ...$watchIds);
 
+    $stmt->bind_param($types, ...$watchIds);
     $stmt->execute();
 
     $sortedResult = $stmt->get_result();
@@ -342,46 +512,83 @@ if (empty($watchIds)) {
 
     $stmt->close();
 
-    // Paginate the globally sorted result set
+    // Paginate globally sorted IDs
     $offset = ($currentPage - 1) * $productsPerPage;
 
-    $pageWatchIds = array_slice(
-        $sortedWatchIds,
-        $offset,
-        $productsPerPage
-    );
+    $pageWatchIds = array_slice($sortedWatchIds, $offset, $productsPerPage);
 
-    // Fetch the complete product data for the current page
+    /* Fetch complete rows for current page
+    Eligibility has already been established.
+    This query MUST NOT remove watches. */
+
     $pagePlaceholders = implode(',', array_fill(0, count($pageWatchIds), '?'));
 
-    $sql = "SELECT w.*, (SELECT image_folder FROM watch_variants dv WHERE dv.watch_id = w.id AND dv.is_default = 1 LIMIT 1) AS default_image_folder, MIN(CASE WHEN wr.is_available = 1 AND wr.price IS NOT NULL THEN wr.price END) AS min_price, MAX(wr.is_available) AS has_stock, COUNT(DISTINCT wr.color_name) AS color_count, COUNT(*) AS variant_count
-                FROM watches w
-                LEFT JOIN watch_variants wr
-                ON wr.watch_id = w.id
-                WHERE w.id IN ($pagePlaceholders)
-                AND w.is_active = 1
-                GROUP BY w.id";
+    $sql = "SELECT w.*,
+                (
+                SELECT dv.image_folder
+                FROM watch_variants dv
+                WHERE dv.watch_id = w.id
+                AND dv.is_default = 1
+                LIMIT 1
+                ) AS default_image_folder,
 
-    if (!$includeOutOfStock) {
-        $sql .= " HAVING has_stock = 1 ";
-    }
+                MIN(
+                        CASE
+                        WHEN wr.is_available = 1
+                        AND wr.price IS NOT NULL
+                        AND wr.price > 0
+                        THEN wr.price
+                        END
+                        ) AS min_price,
 
-    // The IDs have already been globally sorted.
-    // FIELD() preserves that exact order for the final product result.
+                MAX(
+                        CASE
+                        WHEN wr.is_available = 1
+                        AND wr.price IS NOT NULL
+                        AND wr.price > 0
+                        THEN 1
+                        ELSE 0
+                        END
+                        ) AS has_stock,
+
+                COUNT(DISTINCT wr.color_name) AS color_count,
+
+                COUNT(wr.id) AS variant_count
+
+        FROM watches w
+
+        LEFT JOIN watch_variants wr
+        ON wr.watch_id = w.id
+
+        WHERE w.id IN ($pagePlaceholders)
+        AND w.is_active = 1
+
+        GROUP BY w.id";
+
+    /* IDs have already been globally sorted and paginated.
+    FIELD() preserves precisely that order. */
     $idOrder = implode(',', array_map('intval', $pageWatchIds));
 
-    $sql .= " ORDER BY FIELD(w.id, $idOrder)";
+    $sql .= "
+                ORDER BY FIELD(
+                    w.id,
+                    $idOrder
+                )
+            ";
 
     $stmt = $conn->prepare($sql);
 
     if (!$stmt) {
-        die($conn->error . "<br><br>" . $sql);
+        die($conn->error .
+            "<br><br>" .
+            $sql);
     }
 
     $types = str_repeat('i', count($pageWatchIds));
-    $stmt->bind_param($types, ...$pageWatchIds);
 
+    $stmt->bind_param($types, ...$pageWatchIds);
     $stmt->execute();
+
     $watchResult = $stmt->get_result();
 }
 
@@ -430,23 +637,31 @@ include 'includes/header.php';
                         <!-- Preserve the current search and filter state by copying existing GET parameters into hidden inputs, excluding the sort parameter -->
                         <?php
                         foreach ($_GET as $key => $value) {
-                            // Skip the current sort parameter so the selected value replaces it
-                            if ($key === 'sort') {
+                            // The new sort value replaces the old one.
+                            // Pagination must restart from page 1.
+                            if ($key === 'sort' || $key === 'page') {
                                 continue;
                             }
 
-                            // Check whether the parameter is an array
                             if (is_array($value)) {
                                 foreach ($value as $item) {
+                                    // Ignore malformed nested arrays.
+                                    if (!is_scalar($item)) {
+                                        continue;
+                                    }
                         ?>
-                                    <input type="hidden" name="<?= htmlspecialchars($key) ?>[]"
-                                        value="<?= htmlspecialchars($item) ?>">
+                                    <input
+                                        type="hidden"
+                                        name="<?= htmlspecialchars((string) $key, ENT_QUOTES, 'UTF-8') ?>[]"
+                                        value="<?= htmlspecialchars((string) $item, ENT_QUOTES, 'UTF-8') ?>">
                                 <?php
                                 }
-                            } else {
+                            } elseif (is_scalar($value)) {
                                 ?>
-                                <input type="hidden" name="<?= htmlspecialchars($key) ?>"
-                                    value="<?= htmlspecialchars($value) ?>">
+                                <input
+                                    type="hidden"
+                                    name="<?= htmlspecialchars((string) $key, ENT_QUOTES, 'UTF-8') ?>"
+                                    value="<?= htmlspecialchars((string) $value, ENT_QUOTES, 'UTF-8') ?>">
                         <?php
                             }
                         }

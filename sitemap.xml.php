@@ -72,32 +72,41 @@ echo '<?xml version="1.0" encoding="UTF-8"?>';
 
     <?php
     /*
-     * Active watch detail pages.
-     *
-     * watches.created_at represents when the product was added to
-     * WatchShelf and is intentionally used as the sitemap lastmod.
-     *
-     * Retailer price/availability changes in watch_variants do not
-     * represent a significant modification to the watch page itself.
-     */
-    $watchQuery = "SELECT id, brand, model_name, created_at
-                                FROM watches
-                                WHERE is_active = 1
-                                ORDER BY id ASC";
+    * Active watch detail pages.
+    *
+    * `watches.created_at` represents when the product was added to
+    * WatchShelf and is intentionally used as the sitemap lastmod.
+    *
+    * Retailer price/availability changes in watch_variants do not
+    * represent a significant modification to the watch page itself.
+    */
+    $watchQuery = "SELECT w.id, w.brand, w.model_name, MAX(wr.last_checked) AS last_modified
+                                FROM watches w
+                                LEFT JOIN watch_variants wr
+                                ON wr.watch_id = w.id
+                                WHERE w.is_active = 1
+                                GROUP BY w.id, w.brand, w.model_name
+                                ORDER BY w.id ASC";
 
     $watchResult = $conn->query($watchQuery);
 
     if ($watchResult):
         while ($watch = $watchResult->fetch_assoc()):
-            $watchUrl = getWatchUrl((int) $watch['id'], $watch['brand'], $watch['model_name']);
+            $watchUrl = getWatchUrl(
+                (int) $watch['id'],
+                $watch['brand'],
+                $watch['model_name']
+            );
 
-            $createdAt = $watch['created_at'] ? date('c', strtotime($watch['created_at'])) : null;
+            $lastModified = $watch['last_modified']
+                ? date('c', strtotime($watch['last_modified']))
+                : null;
     ?>
             <url>
                 <loc><?= xmlEscape($watchUrl) ?></loc>
 
-                <?php if ($createdAt): ?>
-                    <lastmod><?= xmlEscape($createdAt) ?></lastmod>
+                <?php if ($lastModified): ?>
+                    <lastmod><?= xmlEscape($lastModified) ?></lastmod>
                 <?php endif; ?>
             </url>
     <?php

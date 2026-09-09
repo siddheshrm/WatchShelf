@@ -105,8 +105,8 @@ $og_url = $og_url ?? $page_canonical;
         <div class="site-container">
 
             <form class="search-form" action="<?= BASE_URL ?>/index.php" method="GET">
-                <input type="text" name="search" placeholder="Search watches..."
-                    value="<?= htmlspecialchars($_GET['search'] ?? '') ?>">
+                <input type="text" name="search" placeholder="Brand, model, style, price..."
+                    value="<?= htmlspecialchars($searchQuery, ENT_QUOTES, 'UTF-8') ?>">
 
                 <button type="submit" name="search_submit" value="1">Search</button>
             </form>

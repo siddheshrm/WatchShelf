@@ -1,27 +1,108 @@
 <?php
-$selectedGenders = $_GET['gender'] ?? [];
-$selectedBrands = $_GET['brand'] ?? [];
-$selectedRetailers = $_GET['retailer'] ?? [];
-$selectedColors = $_GET['color'] ?? [];
-$selectedMovement = $_GET['movement'] ?? [];
-$selectedCaseWidths = $_GET['case_width'] ?? [];
+
+// Returns an array of unique, non-empty string values from the specified key in the source array
+function getStringArrayParam(array $source, string $key): array
+{
+    if (!isset($source[$key]) || !is_array($source[$key])) {
+        return [];
+    }
+
+    $values = [];
+
+    foreach ($source[$key] as $value) {
+        if (!is_string($value)) {
+            continue;
+        }
+
+        $value = trim($value);
+
+        if ($value === '') {
+            continue;
+        }
+
+        $values[] = $value;
+    }
+
+    return array_values(array_unique($values));
+}
+
+$selectedGenders = array_values(array_intersect(
+    getStringArrayParam($_GET, 'gender'),
+    ['men', 'women', 'unisex']
+));
+
+$selectedBrands = getStringArrayParam($_GET, 'brand');
+$selectedRetailers = getStringArrayParam($_GET, 'retailer');
+$selectedColors = getStringArrayParam($_GET, 'color');
+
+$selectedMovement = array_values(array_intersect(
+    getStringArrayParam($_GET, 'movement'),
+    ['quartz', 'automatic', 'mechanical', 'manual', 'solar', 'kinetic']
+));
+
+$selectedCaseWidths = array_values(array_intersect(
+    getStringArrayParam($_GET, 'case_width'),
+    [
+        'under_26',
+        '26_30',
+        '30_34',
+        '34_38',
+        '38_42',
+        '42_46',
+        '46_50',
+        '50_plus'
+    ]
+));
 
 // Returns watch IDs matching the selected sidebar filters
 function filterWatches(mysqli $conn, array $filters): array
 {
+    $filters['gender'] = getStringArrayParam($filters, 'gender');
+    $filters['brand'] = getStringArrayParam($filters, 'brand');
+    $filters['retailer'] = getStringArrayParam($filters, 'retailer');
+    $filters['color'] = getStringArrayParam($filters, 'color');
+    $filters['movement'] = getStringArrayParam($filters, 'movement');
+    $filters['case_width'] = getStringArrayParam($filters, 'case_width');
+
+    $filters['gender'] = array_values(array_intersect(
+        $filters['gender'],
+        ['men', 'women', 'unisex']
+    ));
+
+    $filters['movement'] = array_values(array_intersect(
+        $filters['movement'],
+        ['quartz', 'automatic', 'mechanical', 'manual', 'solar', 'kinetic']
+    ));
+
+    $filters['case_width'] = array_values(array_intersect(
+        $filters['case_width'],
+        [
+            'under_26',
+            '26_30',
+            '30_34',
+            '34_38',
+            '38_42',
+            '42_46',
+            '46_50',
+            '50_plus'
+        ]
+    ));
+
     $includeOutOfStock = isset($filters['include_out_of_stock']);
 
-    // Include all retailer records when requested; otherwise only join retailers that currently have the watch in stock
-    $joinCondition = $includeOutOfStock ? "wr.watch_id = w.id" : "wr.watch_id = w.id AND wr.is_available = 1";
+    // Normal catalogue/sidebar browsing requires a currently purchasable variant.
+    // When out-of-stock inclusion is enabled, all variants may participate.
+    $joinCondition = $includeOutOfStock ?
+        "wr.watch_id = w.id" :
+        "wr.watch_id = w.id AND wr.is_available = 1 AND wr.price IS NOT NULL AND wr.price > 0";
 
-    // DISTINCT prevents duplicate watch IDs when a watch is sold by multiple retailers matching the selected filters
     $sql = "SELECT DISTINCT w.id
                 FROM watches w
                 LEFT JOIN watch_variants wr
                 ON $joinCondition
                 WHERE w.is_active = 1";
 
-    // Exclude watches that have no in-stock retailer when the "include out of stock" option is disabled
+    // Require at least one qualifying available variant unless 'include_out_of_stock' is explicitly enabled.
     if (!$includeOutOfStock) {
         $sql .= " AND wr.watch_id IS NOT NULL";
     }
@@ -145,8 +226,13 @@ function filterWatches(mysqli $conn, array $filters): array
     }
 
     // Filter against retailer price, ignoring retailer records without a valid price
-    if (!empty($filters['max_price']) && is_numeric($filters['max_price'])) {
-        $sql .= " AND wr.price IS NOT NULL AND wr.price <= ?";
+    if (
+        isset($filters['max_price']) &&
+        is_string($filters['max_price']) &&
+        is_numeric($filters['max_price']) &&
+        (float) $filters['max_price'] > 0
+    ) {
+        $sql .= " AND wr.price IS NOT NULL AND wr.price > 0 AND wr.price <= ?";
 
         $bindTypes .= "d";
         $params[] = (float) $filters['max_price'];

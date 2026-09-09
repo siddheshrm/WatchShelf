@@ -15,7 +15,6 @@ function searchWatches(mysqli $conn, string $search): array
     $search = str_replace(['-', '_'], ' ', $search);
     $search = preg_replace('/\s+/', ' ', $search);
 
-    $words = explode(' ', $search);
     $words = extractSearchTerms($search, $colorGroups);
 
     // Ignore common filler words so only meaningful search terms contribute to the SQL query
@@ -55,7 +54,20 @@ function searchWatches(mysqli $conn, string $search): array
 
         // Pure numeric values = maximum price
         if (preg_match('/^\d+$/', $word)) {
-            $sql .= " AND wr.price <= ?";
+            $sql .= " AND wr.price IS NOT NULL
+                          AND wr.price > 0
+                          AND wr.price <= ?
+                          AND (
+                                    wr.is_available = 1
+                                    OR NOT EXISTS (
+                                                               SELECT 1
+                                                               FROM watch_variants available_wr
+                                                               WHERE available_wr.watch_id = w.id
+                                                               AND available_wr.is_available = 1
+                                                               AND available_wr.price IS NOT NULL
+                                                               AND available_wr.price > 0
+                                                               )
+                                    )";
 
             $priceParamTypes .= "d";
             $priceParams[] = (float) $word;
@@ -64,16 +76,16 @@ function searchWatches(mysqli $conn, string $search): array
 
             // Search each keyword across multiple watch attributes
             $searchConditions[] = "(
-                                                        LOWER(w.brand) LIKE ?
-                                                        OR LOWER(w.model_name) LIKE ?
-                                                        OR LOWER(w.gender) LIKE ?
-                                                        OR LOWER(w.case_material) LIKE ?
-                                                        OR LOWER(w.band_material) LIKE ?
-                                                        OR LOWER(w.movement_type) LIKE ?
-                                                        OR LOWER(w.display_type) LIKE ?
-                                                        OR LOWER(w.crystal_type) LIKE ?
-                                                        OR LOWER(wr.color_name) LIKE ?
-                                                        OR LOWER(w.tags) LIKE ?
+                                                    LOWER(w.brand) LIKE ?
+                                                    OR LOWER(w.model_name) LIKE ?
+                                                    OR LOWER(w.gender) LIKE ?
+                                                    OR LOWER(w.case_material) LIKE ?
+                                                    OR LOWER(w.band_material) LIKE ?
+                                                    OR LOWER(w.movement_type) LIKE ?
+                                                    OR LOWER(w.display_type) LIKE ?
+                                                    OR LOWER(w.crystal_type) LIKE ?
+                                                    OR LOWER(wr.color_name) LIKE ?
+                                                    OR LOWER(w.tags) LIKE ?
                                                     )";
 
             for ($i = 0; $i < 10; $i++) {
@@ -208,7 +220,20 @@ function filterQuickLinkWatches(mysqli $conn, array $filters): array
 
     foreach ($filters as $key => $value) {
         if ($key === 'max_price') {
-            $sql .= " AND wr.price <= ?";
+            $sql .= " AND wr.price IS NOT NULL
+                          AND wr.price > 0
+                          AND wr.price <= ?
+                          AND (
+                                    wr.is_available = 1
+                                    OR NOT EXISTS (
+                                                               SELECT 1
+                                                               FROM watch_variants available_wr
+                                                               WHERE available_wr.watch_id = w.id
+                                                               AND available_wr.is_available = 1
+                                                               AND available_wr.price IS NOT NULL
+                                                               AND available_wr.price > 0
+                                                               )
+                                    )";
 
             $bindTypes .= 'd';
             $params[] = (float) $value;
