@@ -61,7 +61,7 @@ switch ($sort) {
 
 /* PAGINATION */
 
-$productsPerPage =36;
+$productsPerPage = 36;
 $currentPage = 1;
 
 if (isset($_GET['page'])) {
@@ -873,7 +873,7 @@ include 'includes/header.php';
                             continue;
                         } ?>
 
-                        <a href="<?= BASE_URL ?>/index.php?quick_link=<?= urlencode($relatedSlug) ?>"
+                        <a href="<?= BASE_URL ?>/?quick_link=<?= urlencode($relatedSlug) ?>"
                             class="quick-link-item">
 
                             <span>

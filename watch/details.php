@@ -214,7 +214,6 @@ $productSchema = [
 ];
 
 foreach ($currentRetailers as $retailer) {
-
     if (!$retailer['is_available'] || $retailer['price'] === null || empty($retailer['base_url'])) {
         continue;
     }
@@ -225,7 +224,11 @@ foreach ($currentRetailers as $retailer) {
         'priceCurrency' => $retailer['currency'] ?: 'INR',
         'price' => number_format((float) $retailer['price'], 2, '.', ''),
         'availability' => 'https://schema.org/InStock',
-        'itemCondition' => 'https://schema.org/NewCondition'
+        'itemCondition' => 'https://schema.org/NewCondition',
+        'seller' => [
+            '@type' => 'Organization',
+            'name' => $retailer['retailer_name']
+        ]
     ];
 }
 
@@ -234,7 +237,15 @@ if (empty($productSchema['offers'])) {
 }
 
 if (!empty($productImages)) {
-    $productSchema['image'] = array_values($productImages);
+    $productSchema['image'] = array_values(
+        array_map(function ($image) {
+            if (preg_match('#^https?://#i', $image)) {
+                return $image;
+            }
+
+            return rtrim(SITE_URL, '/') . '/' . ltrim($image, '/');
+        }, $productImages)
+    );
 }
 
 if (!empty($watch['model_name'])) {
@@ -690,7 +701,7 @@ include '../includes/header.php';
                     <?php foreach ($productQuickLinks as $slug => $quickLink): ?>
 
                         <a class="quick-link-item"
-                            href="<?= BASE_URL ?>/index.php?quick_link=<?= urlencode($slug) ?>">
+                            href="<?= BASE_URL ?>/?quick_link=<?= urlencode($slug) ?>">
                             <span><?= htmlspecialchars($quickLink['title']) ?></span>
                             <span class="quick-link-arrow" aria-hidden="true">→</span>
                         </a>

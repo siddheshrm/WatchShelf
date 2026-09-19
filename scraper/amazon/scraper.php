@@ -4,134 +4,361 @@
 Returns:
 [
     'success'   => bool,
-    'price'     => float,
-    'available' => bool,
-    'status'    => 'success' | 'out_of_stock' | 'error',
-    'message'   => string // Present only when status = 'error'
+    'price'     => float|null,
+    'available' => bool|null,
+    'status'    => 'success' | 'out_of_stock' | 'error' | 'captcha',
+    'message'   => string // Present only when status = 'error' or 'captcha'
 ]
 */
 
 function scrape_amazon(array $variant): array
 {
-    $url = $variant['base_url'];
+    $url = trim($variant['base_url'] ?? '');
 
-    // Initialize cURL
-    $ch = curl_init();
+    if ($url === '') {
+        return [
+            'success'   => false,
+            'price'     => null,
+            'available' => null,
+            'status'    => 'error',
+            'message'   => 'Amazon URL is empty.'
+        ];
+    }
 
-    curl_setopt_array($ch, [
-        CURLOPT_URL => $url,
-        CURLOPT_RETURNTRANSFER => true,
-        CURLOPT_FOLLOWLOCATION => true,
-        CURLOPT_SSL_VERIFYPEER => false,
-        CURLOPT_CONNECTTIMEOUT => 15,
-        CURLOPT_TIMEOUT => 30,
-        CURLOPT_ENCODING => '',
-        CURLOPT_HTTPHEADER => [
-            'User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36'
-        ]
-    ]);
+    /*
+     * Normalize Amazon URLs to:
+     * https://www.amazon.in/dp/ASIN
+     */
+    if (preg_match('#/dp/([A-Z0-9]{10})#i', $url, $matches)) {
+        $asin = strtoupper($matches[1]);
+        $url = "https://www.amazon.in/dp/{$asin}";
+    }
 
-    $html = curl_exec($ch);
+    $maxAttempts = 2;
 
-    $error = curl_error($ch);
-    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    for ($attempt = 1; $attempt <= $maxAttempts; $attempt++) {
 
-    if (curl_errno($ch)) {
+        write_log(
+            'amazon',
+            "Request attempt {$attempt}/{$maxAttempts}"
+        );
+
+        $ch = curl_init($url);
+
+        curl_setopt_array($ch, [
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_FOLLOWLOCATION => true,
+            CURLOPT_TIMEOUT        => 30,
+            CURLOPT_SSL_VERIFYPEER => true,
+            CURLOPT_SSL_VERIFYHOST => 2,
+            CURLOPT_USERAGENT =>
+            'Mozilla/5.0 (Windows NT 10.0; Win64; x64) ' .
+                'AppleWebKit/537.36 (KHTML, like Gecko) ' .
+                'Chrome/138.0.0.0 Safari/537.36',
+        ]);
+
+        $html = curl_exec($ch);
+
+        $curlError = curl_error($ch);
+        $curlErrno = curl_errno($ch);
+        $httpCode  = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+
         curl_close($ch);
 
-        return [
-            'success' => false,
-            'status' => 'error',
-            'message' => "cURL Error: {$error}"
-        ];
-    }
+        write_log(
+            'amazon',
+            "HTTP status: {$httpCode}"
+        );
 
-    curl_close($ch);
+        /*
+         * cURL / network error.
+         */
+        if ($curlErrno !== 0 || $html === false) {
 
-    if ($httpCode !== 200) {
-        return [
-            'success' => false,
-            'status' => 'error',
-            'message' => "HTTP {$httpCode} received."
-        ];
-    }
+            if ($attempt < $maxAttempts) {
+                sleep(1);
+                continue;
+            }
 
-    if (empty($html)) {
-        return [
-            'success' => false,
-            'status' => 'error',
-            'message' => 'Empty HTML received.'
-        ];
-    }
+            return [
+                'success'   => false,
+                'price'     => null,
+                'available' => null,
+                'status'    => 'error',
+                'message'   => "Amazon request failed: {$curlError}"
+            ];
+        }
 
-    // Parse HTML
-    $dom = new DOMDocument();
+        /*
+         * Empty response.
+         */
+        if ($html === '') {
 
-    libxml_use_internal_errors(true);
+            if ($attempt < $maxAttempts) {
+                sleep(1);
+                continue;
+            }
 
-    if (!$dom->loadHTML($html)) {
+            return [
+                'success'   => false,
+                'price'     => null,
+                'available' => null,
+                'status'    => 'error',
+                'message'   => 'Empty HTML received.'
+            ];
+        }
+
+        /*
+         * CAPTCHA / bot-check detection.
+         */
+        $isCaptcha =
+            stripos($html, 'validateCaptcha') !== false ||
+            stripos($html, 'api-services-support@amazon.com') !== false ||
+            stripos($html, 'Enter the characters you see below') !== false ||
+            stripos(
+                $html,
+                "Sorry, we just need to make sure you're not a robot"
+            ) !== false ||
+            stripos(
+                $html,
+                'Type the characters you see in this image'
+            ) !== false ||
+            stripos($html, 'Robot Check') !== false ||
+            (
+                stripos($html, 'captcha') !== false &&
+                stripos($html, 'amazon') !== false
+            );
+
+        if ($isCaptcha) {
+
+            if ($attempt < $maxAttempts) {
+                sleep(2);
+                continue;
+            }
+
+            return [
+                'success'   => false,
+                'price'     => null,
+                'available' => null,
+                'status'    => 'captcha',
+                'message'   => 'Amazon CAPTCHA / challenge page detected.'
+            ];
+        }
+
+        /*
+         * Retry temporary HTTP responses.
+         */
+        if ($httpCode === 429 || $httpCode >= 500) {
+
+            if ($attempt < $maxAttempts) {
+                sleep(2);
+                continue;
+            }
+
+            return [
+                'success'   => false,
+                'price'     => null,
+                'available' => null,
+                'status'    => 'error',
+                'message'   => "Amazon returned HTTP status {$httpCode}."
+            ];
+        }
+
+        /*
+         * Other HTTP errors.
+         */
+        if ($httpCode !== 200) {
+            return [
+                'success'   => false,
+                'price'     => null,
+                'available' => null,
+                'status'    => 'error',
+                'message'   => "Amazon returned HTTP status {$httpCode}."
+            ];
+        }
+
+        /*
+         * Parse HTML.
+         */
+        libxml_use_internal_errors(true);
+
+        $dom = new DOMDocument();
+
+        if (!$dom->loadHTML($html)) {
+            libxml_clear_errors();
+            libxml_use_internal_errors(false);
+
+            return [
+                'success'   => false,
+                'price'     => null,
+                'available' => null,
+                'status'    => 'error',
+                'message'   => 'Failed to parse Amazon HTML.'
+            ];
+        }
+
         libxml_clear_errors();
         libxml_use_internal_errors(false);
 
-        return [
-            'success' => false,
-            'status' => 'error',
-            'message' => 'Failed to parse HTML.'
+        $xpath = new DOMXPath($dom);
+
+        /*
+         * Determine availability.
+         */
+        $availabilitySelectors = [
+            "//*[@id='outOfStock']",
+            "//*[@id='availability']//span[contains(@class, 'primary-availability-message')]"
         ];
-    }
 
-    libxml_clear_errors();
-    libxml_use_internal_errors(false);
+        $isOutOfStock = false;
 
-    $xpath = new DOMXPath($dom);
+        foreach ($availabilitySelectors as $selector) {
 
-    // Amazon XPath selectors
-    $priceSelectors = [
-        "//*[contains(@class, 'a-price-whole')]"
-    ];
+            $nodes = $xpath->query($selector);
 
-    $availabilitySelector = "//*[@id='availabilityInsideBuyBox_feature_div']";
+            if ($nodes === false || $nodes->length === 0) {
+                continue;
+            }
 
-    // Price
-    $productPrice = '';
+            foreach ($nodes as $node) {
 
-    foreach ($priceSelectors as $selector) {
-        $nodes = $xpath->query($selector);
+                $availabilityText = strtolower(
+                    trim(preg_replace('/\s+/', ' ', $node->textContent))
+                );
 
-        if ($nodes->length > 0) {
-            $productPrice = trim($nodes->item(0)->textContent);
-            break;
+                if (
+                    strpos($availabilityText, 'currently unavailable') !== false ||
+                    strpos($availabilityText, 'out of stock') !== false ||
+                    strpos($availabilityText, 'temporarily out of stock') !== false ||
+                    strpos(
+                        $availabilityText,
+                        "we don't know when or if this item will be back in stock"
+                    ) !== false
+                ) {
+                    $isOutOfStock = true;
+                    break 2;
+                }
+            }
         }
-    }
 
-    if ($productPrice === '') {
+        write_log(
+            'amazon',
+            'Availability: ' . ($isOutOfStock ? 'OUT OF STOCK' : 'IN STOCK')
+        );
+
+        /*
+         * Determine price.
+         */
+        $priceSelectors = [
+            "//*[@id='corePrice_feature_div']//span[contains(@class, 'a-price-whole')]",
+            "//*[@id='apex_desktop']//span[contains(@class, 'a-price-whole')]",
+            "//span[contains(@class, 'a-price-whole')]",
+            "//*[@id='priceblock_ourprice']",
+            "//*[@id='priceblock_dealprice']",
+            "//*[@id='priceblock_saleprice']"
+        ];
+
+        $productPrice = null;
+
+        foreach ($priceSelectors as $selector) {
+
+            $nodes = $xpath->query($selector);
+
+            if ($nodes === false || $nodes->length === 0) {
+                continue;
+            }
+
+            foreach ($nodes as $node) {
+
+                $candidate = trim($node->textContent);
+
+                if ($candidate === '') {
+                    continue;
+                }
+
+                $candidate = preg_replace('/[^\d.,]/', '', $candidate);
+                $candidate = str_replace(',', '', $candidate);
+
+                if ($candidate !== '' && is_numeric($candidate)) {
+                    $productPrice = (float) $candidate;
+                    break 2;
+                }
+            }
+        }
+
+        /*
+         * An out-of-stock product can still be a valid result
+         * even when Amazon does not expose a price.
+         */
+        if ($productPrice === null) {
+
+            if ($isOutOfStock) {
+
+                write_log(
+                    'amazon',
+                    'Price: Not found'
+                );
+
+                return [
+                    'success'   => true,
+                    'price'     => null,
+                    'available' => false,
+                    'status'    => 'out_of_stock'
+                ];
+            }
+
+            return [
+                'success'   => false,
+                'price'     => null,
+                'available' => null,
+                'status'    => 'error',
+                'message'   => 'Product price not found.'
+            ];
+        }
+
+        /*
+         * Validate price.
+         */
+        if ($productPrice <= 0) {
+            return [
+                'success'   => false,
+                'price'     => null,
+                'available' => null,
+                'status'    => 'error',
+                'message'   => 'Invalid product price.'
+            ];
+        }
+
+        write_log(
+            'amazon',
+            'Price: ₹' . number_format($productPrice, 2)
+        );
+
+        /*
+         * Final result.
+         */
+        if ($isOutOfStock) {
+            return [
+                'success'   => true,
+                'price'     => $productPrice,
+                'available' => false,
+                'status'    => 'out_of_stock'
+            ];
+        }
+
         return [
-            'success' => false,
-            'status' => 'error',
-            'message' => 'Product price not found.'
+            'success'   => true,
+            'price'     => $productPrice,
+            'available' => true,
+            'status'    => 'success'
         ];
     }
-
-    // Remove commas, currency symbols, etc.
-    $price = (float)preg_replace('/[^\d.]/', '', $productPrice);
-
-    if ($price <= 0) {
-        return [
-            'success' => false,
-            'status' => 'error',
-            'message' => 'Invalid product price.'
-        ];
-    }
-
-    // Availability is based on Amazon buy box availability container.
-    $availabilityNodes = $xpath->query($availabilitySelector);
-
-    $available = ($availabilityNodes->length > 0);
 
     return [
-        'success' => true,
-        'price' => $price,
-        'available' => $available,
-        'status' => $available ? 'success' : 'out_of_stock'
+        'success'   => false,
+        'price'     => null,
+        'available' => null,
+        'status'    => 'error',
+        'message'   => 'Amazon scraper failed unexpectedly.'
     ];
 }

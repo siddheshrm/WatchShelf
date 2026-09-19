@@ -13,12 +13,13 @@ $quickLinks = require __DIR__ . '/../config/quick-links.php';
             <a href="<?= BASE_URL ?>/developers-note.php" class="footer-developer-link">Developer's Note</a>
         </nav>
 
+        <!-- Quick Links -->
         <div class="footer-quick-links">
             <h3>Watch Guides</h3>
 
             <div class="footer-quick-links-list">
                 <?php foreach ($quickLinks as $slug => $quickLink): ?>
-                    <a href="<?= BASE_URL ?>/index.php?quick_link=<?= urlencode($slug) ?>">
+                    <a href="<?= BASE_URL ?>/?quick_link=<?= urlencode($slug) ?>">
                         <?= htmlspecialchars($quickLink['title']) ?>
                     </a>
                 <?php endforeach; ?>

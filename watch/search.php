@@ -485,7 +485,12 @@ function extractSearchTerms(string $search, array $colorGroups): array
 // Supports predefined watch attributes such as brand, gender, movement, materials, display type, and maximum price.
 function filterQuickLinkWatches(mysqli $conn, array $filters): array
 {
-    // Include out-of-stock watches
+    /* For price-based Quick Links:
+    Available watches qualify only through a currently available retailer
+    whose price is within the configured limit.
+    Completely unavailable watches may remain discoverable when a stored
+    retailer price falls within the limit.
+    Current catalogue pricing is calculated separately from available offers only. */
     $sql = "SELECT DISTINCT w.id
                 FROM watches w
                 LEFT JOIN watch_variants wr

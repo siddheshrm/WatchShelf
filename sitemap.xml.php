@@ -74,11 +74,12 @@ echo '<?xml version="1.0" encoding="UTF-8"?>';
     /*
     * Active watch detail pages.
     *
-    * `watches.created_at` represents when the product was added to
-    * WatchShelf and is intentionally used as the sitemap lastmod.
+    * The most recent watch_variants.last_checked value is currently used
+    * as the sitemap lastmod because retailer price and availability data
+    * are dynamic parts of the watch detail page.
     *
-    * Retailer price/availability changes in watch_variants do not
-    * represent a significant modification to the watch page itself.
+    * Note: last_checked represents when a retailer variant was scraped,
+    * not necessarily when its stored data changed.
     */
     $watchQuery = "SELECT w.id, w.brand, w.model_name, MAX(wr.last_checked) AS last_modified
                                 FROM watches w
