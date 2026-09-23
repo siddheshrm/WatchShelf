@@ -113,7 +113,10 @@ if (!$result) {
 
                         <!-- Brand & Model -->
                         <td>
-                            <a href="https://watchshelf.in/watch/details.php?id=<?= (int) $watch['id']; ?>" target="_blank">
+                            <a
+                                href="https://watchshelf.in/watch/details.php?id=<?= (int) $watch['id']; ?>"
+                                target="_blank"
+                                title="<?= htmlspecialchars($watch['brand'] . ' ' . $watch['model_name']); ?>">
                                 <?= htmlspecialchars($watch['brand']); ?>
                                 <?= htmlspecialchars($watch['model_name']); ?>
                             </a>

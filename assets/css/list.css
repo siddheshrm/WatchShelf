@@ -1,30 +1,39 @@
+* {
+  box-sizing: border-box;
+}
+
 body {
   margin: 30px;
   font-family: "Poppins", sans-serif;
+  font-size: 16px;
+  line-height: 1.5;
   background: #f6f7fb;
   color: #333;
 }
 
 .page {
+  width: 100%;
   max-width: 1600px;
 }
 
 h1 {
   margin: 0 0 15px;
   font-size: 28px;
+  line-height: 1.25;
+  color: #222;
 }
 
 .top-links {
-  margin-bottom: 18px;
   display: flex;
   align-items: center;
   gap: 10px;
+  margin-bottom: 18px;
 }
 
 .top-links a {
   color: #1565c0;
-  text-decoration: none;
   font-weight: 600;
+  text-decoration: none;
 }
 
 .top-links a:hover {
@@ -32,10 +41,11 @@ h1 {
 }
 
 .btn-primary {
-  padding: 6px 14px;
+  padding: 7px 14px;
+  border-radius: 6px;
   background: #1565c0;
-  color: white !important;
-  border-radius: 5px;
+  color: #fff !important;
+  transition: background 0.15s ease;
 }
 
 .btn-primary:hover {
@@ -46,42 +56,69 @@ h1 {
 .summary {
   margin: 20px 0;
   padding: 12px 16px;
-  background: white;
+  background: #fff;
+  border: 1px solid #e1e4e8;
   border-left: 4px solid #1565c0;
+  border-radius: 6px;
 }
 
 .watch-table {
   width: 100%;
   border-collapse: collapse;
-  background: white;
+  background: #fff;
+  border: 1px solid #dde1e7;
 }
 
 .watch-table th {
-  background: #eceff3;
   padding: 12px;
-  text-align: left;
+  background: #eceff3;
   border-bottom: 2px solid #d5d9df;
+  color: #333;
+  text-align: left;
+  font-weight: 600;
   white-space: nowrap;
 }
 
 .watch-table td {
-  padding: 12px;
-  border-bottom: 1px solid #e5e5e5;
+  padding: 10px 12px;
+  border-bottom: 1px solid #e7e9ec;
   vertical-align: middle;
 }
 
-.watch-table tbody tr:nth-child(even) {
-  background: #fafafa;
+.watch-table tr:last-child td {
+  border-bottom: none;
 }
 
-.watch-table tbody tr:hover {
+.watch-table tr:nth-child(even) {
+  background: #fafbfc;
+}
+
+.watch-table tr:hover {
   background: #eef6ff;
 }
 
+/* Watch name */
+.watch-table th:nth-child(3),
+.watch-table td:nth-child(3) {
+  width: 360px;
+  max-width: 360px;
+}
+
+.watch-table td:nth-child(3) a {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .watch-table img {
-  width: 80px;
+  display: block;
+  width: 70px;
+  height: 70px;
+  object-fit: contain;
+  border: 1px solid #dde1e7;
   border-radius: 6px;
-  border: 1px solid #ddd;
+  background: #fff;
 }
 
 .watch-table a {
@@ -93,14 +130,21 @@ h1 {
   text-decoration: underline;
 }
 
+.watch-table small {
+  display: block;
+  margin-top: 2px;
+  color: #777;
+  white-space: nowrap;
+}
+
 .status-yes {
   color: #2e7d32;
-  font-weight: bold;
+  font-weight: 600;
 }
 
 .status-no {
   color: #c62828;
-  font-weight: bold;
+  font-weight: 600;
 }
 
 .owner-owned {
@@ -117,38 +161,91 @@ h1 {
   color: #777;
 }
 
+/* Actions */
+.watch-table td:last-child {
+  white-space: nowrap;
+}
+
 .action-btn {
   display: inline-block;
-  padding: 4px 10px;
-  border-radius: 4px;
+  padding: 5px 10px;
+  border-radius: 5px;
   font-size: 13px;
-  text-decoration: none;
+  font-weight: 500;
+  text-decoration: none !important;
 }
 
 .action-edit {
   background: #e3f2fd;
 }
 
-.action-delete {
-  background: #ffebee;
-  color: #c62828;
+.action-edit:hover {
+  background: #d5eafb;
 }
 
-/* Pagination styles */
+.action-delete {
+  margin-left: 4px;
+  background: #ffebee;
+  color: #c62828 !important;
+}
+
+.action-delete:hover {
+  background: #ffdde1;
+}
+
+/* Pagination */
 .pagination {
   display: flex;
+  flex-wrap: wrap;
   justify-content: center;
   gap: 6px;
-  margin-top: 20px;
+  margin-top: 22px;
 }
 
 .pagination a {
+  min-width: 34px;
   padding: 6px 10px;
-  border: 1px solid #ccc;
+  border: 1px solid #cfd4da;
+  border-radius: 5px;
+  background: #fff;
+  color: #444;
+  text-align: center;
   text-decoration: none;
-  color: inherit;
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease;
+}
+
+.pagination a:hover {
+  background: #f0f4f8;
+  border-color: #b8bec5;
 }
 
 .pagination a.active {
+  border-color: #1565c0;
+  background: #1565c0;
+  color: #fff;
   font-weight: 600;
+}
+
+@media (max-width: 900px) {
+  body {
+    margin: 20px;
+    overflow-x: auto;
+  }
+
+  h1 {
+    font-size: 24px;
+  }
+
+  .watch-table {
+    min-width: 1000px;
+  }
+}
+
+@media (max-width: 600px) {
+  .top-links {
+    align-items: flex-start;
+    flex-wrap: wrap;
+  }
 }
