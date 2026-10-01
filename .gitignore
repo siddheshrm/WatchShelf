@@ -1,0 +1,21 @@
+admin/password_hash.php
+assets/images/
+notes.txt
+tree.txt
+README.md
+.env
+
+# Ignore all retailer log folders
+**/logs/
+
+scraper/cache/usd_inr.json
+
+scraper/titan/package-lock.json
+scraper/titan/package.json
+scraper/titan/node_modules
+
+scraper/amazon/package-lock.json
+scraper/amazon/package.json
+scraper/amazon/node_modules
+
+scraper/cleanup-logs/
