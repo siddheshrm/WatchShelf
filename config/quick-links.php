@@ -42,17 +42,6 @@ return [
         ]
     ],
 
-    'best-mechanical-watches-under-15000' => [
-        'title' => 'Best Mechanical Watches Under ₹15,000',
-        'slug' => 'best-mechanical-watches-under-15000',
-        'description' => 'Explore mechanical watches under ₹15,000 in India, with specifications, prices, and retailer availability to compare models across different brands.',
-        'filters' => [
-            'movement_type' => 'Mechanical',
-            'max_price' => 15000
-        ],
-        'related' => []
-    ],
-
     'best-casio-watches-under-5000' => [
         'title' => 'Best Casio Watches Under ₹5,000',
         'slug' => 'best-casio-watches-under-5000',
@@ -64,6 +53,32 @@ return [
         'related' => [
             'best-watches-for-men-under-5000',
             'best-watches-for-women-under-5000'
+        ]
+    ],
+
+    'best-mechanical-watches-under-20000' => [
+        'title' => 'Best Mechanical Watches Under ₹20,000',
+        'slug' => 'best-mechanical-watches-under-20000',
+        'description' => 'Explore mechanical watches under ₹20,000 in India, with specifications, prices, and retailer availability to compare models across different brands.',
+        'filters' => [
+            'movement_type' => 'Mechanical',
+            'max_price' => 20000
+        ],
+        'related' => [
+            'best-automatic-watches-under-20000'
+        ]
+    ],
+
+    'best-automatic-watches-under-20000' => [
+        'title' => 'Best Automatic Watches Under ₹20,000',
+        'slug' => 'best-automatic-watches-under-20000',
+        'description' => 'Explore automatic watches under ₹20,000 in India, with specifications, prices, and retailer availability to compare models across different brands.',
+        'filters' => [
+            'movement_type' => 'Automatic',
+            'max_price' => 20000
+        ],
+        'related' => [
+            'best-mechanical-watches-under-20000'
         ]
     ],
 ];
