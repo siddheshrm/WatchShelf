@@ -83,6 +83,14 @@ function scrape_myntra(array $variant): array
             html_entity_decode($jsonText, ENT_QUOTES | ENT_HTML5, 'UTF-8')
         );
 
+        // Remove the review property, which may contain malformed JSON
+        // This handles Myntra's review field when it is the final property.
+        $jsonText = preg_replace(
+            '/,\s*"review"\s*:\s*\{.*(?=\}\s*$)/s',
+            '',
+            $jsonText
+        );
+
         // Preserve line breaks inside JSON string values
         $jsonText = preg_replace_callback(
             '/"((?:[^"\\\\]|\\\\.)*)"/s',
@@ -112,7 +120,7 @@ function scrape_myntra(array $variant): array
             continue;
         }
 
-        $price = (float) $offers['price'];
+        $price = (float)$offers['price'];
 
         if ($price <= 0) {
             continue;

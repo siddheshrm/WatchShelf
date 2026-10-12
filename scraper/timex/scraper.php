@@ -13,6 +13,8 @@ Returns:
 
 function scrape_timex(array $variant): array
 {
+    sleep(1);
+
     $ch = curl_init();
 
     curl_setopt_array($ch, [
