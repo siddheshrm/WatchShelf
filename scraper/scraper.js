@@ -14,9 +14,9 @@ const QUEUE_URL = `${API_BASE_URL}/central_queue.php`;
 const UPDATE_URL = `${API_BASE_URL}/central_update.php`;
 
 const SCRAPERS = {
-  casio: require("./casio/scraper_v2"),
-  amazon: require("./amazon/scraper_v2"),
-  titan: require("./titan/scraper_v2"),
+  casio: require("./casio/scraper"),
+  amazon: require("./amazon/scraper"),
+  titan: require("./titan/scraper"),
 };
 
 /*
