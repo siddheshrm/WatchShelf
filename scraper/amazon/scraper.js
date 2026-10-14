@@ -15,11 +15,8 @@ if (!SCRAPER_API_KEY) {
 // WatchShelf scraper API
 
 /*
-const QUEUE_URL =
-  "http://localhost/WatchShelf/api/scraper/amazon/queue.php";
-
-const UPDATE_URL =
-  "http://localhost/WatchShelf/api/scraper/amazon/update.php";
+const QUEUE_URL = "http://localhost/WatchShelf/api/scraper/amazon/queue.php";
+const UPDATE_URL = "http://localhost/WatchShelf/api/scraper/amazon/update.php";
 */
 
 // Production

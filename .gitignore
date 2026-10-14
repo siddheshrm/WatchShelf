@@ -9,6 +9,7 @@ README.md
 
 scraper/cache/usd_inr.json
 
-scraper/*/node_modules/
+# Ignore Node.js dependencies
+**/node_modules/
 
 scraper/cleanup-logs/
