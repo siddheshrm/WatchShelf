@@ -1,0 +1,21 @@
+Termux:X11 Setup – Titan Scraper
+================================
+
+Titan requires headed Chromium on Android because headless Chromium returns HTTP 403 errors.
+Casio and Amazon work headlessly and do not require X11.
+
+The start-x11.sh script:
+- Sets DISPLAY=:0 in the current Termux session.
+- Starts Termux:X11 if it is not already running.
+- Avoids launching a duplicate X11 server.
+
+Before running Titan:
+1. Open the Termux:X11 Android app.
+2. Run: source ./start-x11.sh
+3. Run: node scraper.js titan
+
+IMPORTANT:
+Use "source" instead of "./start-x11.sh" so the DISPLAY variable remains available in the current shell.
+
+For testing:
+node scraper.js titan 18-20 --dry-run
