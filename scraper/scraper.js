@@ -12,6 +12,7 @@ const API_BASE_URL = "https://watchshelf.in/api/scraper";
 
 const QUEUE_URL = `${API_BASE_URL}/central_queue.php`;
 const UPDATE_URL = `${API_BASE_URL}/central_update.php`;
+const LOG_URL = `${API_BASE_URL}/central_log.php`;
 
 const SCRAPERS = {
   casio: require("./casio/scraper"),
@@ -108,6 +109,51 @@ function writeLog(message) {
   const line = `[${getTimestamp()}] ${message}`;
 
   fs.appendFileSync(LOG_FILE, `${line}\n`, "utf8");
+}
+
+async function uploadLog() {
+  const content = fs.readFileSync(LOG_FILE, "utf8");
+
+  const response = await fetch(LOG_URL, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "X-Scraper-Key": SCRAPER_API_KEY,
+    },
+    body: JSON.stringify({
+      retailer,
+      filename: path.basename(LOG_FILE),
+      content,
+    }),
+    signal: AbortSignal.timeout(30000),
+  });
+
+  const responseText = await response.text();
+
+  if (!response.ok) {
+    throw new Error(
+      `Log upload failed: HTTP ${response.status}\n${responseText}`,
+    );
+  }
+
+  let data;
+
+  try {
+    data = JSON.parse(responseText);
+  } catch {
+    throw new Error(`Log upload returned invalid JSON:\n${responseText}`);
+  }
+
+  if (
+    data.success !== true ||
+    data.retailer !== retailer ||
+    data.filename !== path.basename(LOG_FILE) ||
+    data.bytes !== Buffer.byteLength(content, "utf8")
+  ) {
+    throw new Error(`Invalid log upload response:\n${responseText}`);
+  }
+
+  return data;
 }
 
 // Helper functions
@@ -398,6 +444,14 @@ async function main() {
     writeLog(`========== Finished ${retailer} scraper ==========`);
 
     writeLog("");
+
+    try {
+      await uploadLog();
+    } catch (error) {
+      console.error(`Server log upload failed: ${error.message}`);
+
+      process.exitCode = 1;
+    }
   }
 }
 

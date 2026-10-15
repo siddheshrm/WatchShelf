@@ -47,6 +47,12 @@ RewriteRule ^sitemap\.xml$ sitemap.xml.php [L]
 RewriteRule ^watch/(.+)-([0-9]+)$ watch/details.php?id=$2&slug=$1 [L,QSA]
 
 # --------------------------------------------------
+# Restrict scraper logs from public access
+# --------------------------------------------------
+
+RewriteRule ^scraper/[^/]+/logs(?:/|$) - [F,L,NC]
+
+# --------------------------------------------------
 # Do not rewrite existing files/directories
 # --------------------------------------------------
 
