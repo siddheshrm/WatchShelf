@@ -97,9 +97,11 @@ function getTimestamp() {
 function getLogFilename() {
   const date = getIndiaDateParts();
 
+  const platform = process.platform === "android" ? "android" : "windows";
+
   return (
     `${date.year}-${date.month}-${date.day}_` +
-    `${date.hour}-${date.minute}-${date.second}.log`
+    `${date.hour}-${date.minute}-${date.second}_${platform}.log`
   );
 }
 
